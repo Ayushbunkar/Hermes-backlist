@@ -1,0 +1,302 @@
+2026-07-08T17:17:51.244+05:30 [gateway] loading configuration…
+2026-07-08T17:17:51.315+05:30 [gateway] resolving authentication…
+2026-07-08T17:17:51.318+05:30 [gateway] starting...
+2026-07-08T17:17:54.532+05:30 [gateway] starting HTTP server...
+2026-07-08T17:17:54.541+05:30 [canvas] host mounted at http://0.0.0.0:19789/__openclaw__/canvas/ (root /home/openclaw/.openclaw-backlink/canvas)
+2026-07-08T17:17:54.545+05:30 [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-07-08T17:17:54.696+05:30 [health-monitor] started (interval: 300s, startup-grace: 60s, channel-connect-grace: 120s)
+2026-07-08T17:17:54.999+05:30 [gateway] agent model: local-bifrost/vertex/gemini-3.1-flash-lite
+2026-07-08T17:17:55.000+05:30 [gateway] ready (7 plugins: acpx, backlink-onboarder, browser, device-pair, phone-control, talk-voice, telegram; 3.7s)
+2026-07-08T17:17:55.002+05:30 [gateway] log file: /tmp/openclaw/openclaw-2026-07-08.log
+2026-07-08T17:17:55.004+05:30 [gateway] security warning: dangerous config flags enabled: gateway.controlUi.allowInsecureAuth=true. Run `openclaw security audit`.
+2026-07-08T17:17:55.015+05:30 [heartbeat] started
+2026-07-08T17:17:55.034+05:30 [gateway] starting channels and sidecars...
+2026-07-08T17:17:55.331+05:30 [hooks] loaded 4 internal hook handlers
+2026-07-08T17:18:02.995+05:30 [bonjour] watchdog detected non-announced service; attempting re-advertise (gateway fqdn=5497e0ee663a (OpenClaw)._openclaw-gw._tcp.local. host=openclaw.local. port=19789 state=probing)
+2026-07-08T17:40:11.921+05:30 [gateway] loading configuration…
+2026-07-08T17:40:12.002+05:30 [gateway] resolving authentication…
+2026-07-08T17:40:12.005+05:30 [gateway] starting...
+2026-07-08T17:40:15.197+05:30 [gateway] starting HTTP server...
+2026-07-08T17:40:15.303+05:30 [canvas] host mounted at http://0.0.0.0:19789/__openclaw__/canvas/ (root /home/openclaw/.openclaw-backlink/canvas)
+2026-07-08T17:40:15.338+05:30 [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-07-08T17:40:15.669+05:30 [health-monitor] started (interval: 300s, startup-grace: 60s, channel-connect-grace: 120s)
+2026-07-08T17:40:16.035+05:30 [gateway] agent model: local-bifrost/vertex/gemini-3.1-flash-lite
+2026-07-08T17:40:16.037+05:30 [gateway] ready (7 plugins: acpx, backlink-onboarder, browser, device-pair, phone-control, talk-voice, telegram; 4.0s)
+2026-07-08T17:40:16.038+05:30 [gateway] log file: /tmp/openclaw/openclaw-2026-07-08.log
+2026-07-08T17:40:16.042+05:30 [gateway] security warning: dangerous config flags enabled: gateway.controlUi.allowInsecureAuth=true. Run `openclaw security audit`.
+2026-07-08T17:40:16.052+05:30 [heartbeat] started
+2026-07-08T17:40:16.063+05:30 [gateway] starting channels and sidecars...
+2026-07-08T17:40:16.335+05:30 [hooks] loaded 4 internal hook handlers
+2026-07-08T17:40:22.661+05:30 [bonjour] watchdog detected non-announced service; attempting re-advertise (gateway fqdn=7dfb7fd28559 (OpenClaw)._openclaw-gw._tcp.local. host=openclaw.local. port=19789 state=probing)
+2026-07-08T17:43:00.953+05:30 [gateway] loading configuration…
+2026-07-08T17:43:01.015+05:30 [gateway] resolving authentication…
+2026-07-08T17:43:01.018+05:30 [gateway] starting...
+2026-07-08T17:43:10.848+05:30 [gateway] loading configuration…
+2026-07-08T17:43:10.948+05:30 [gateway] resolving authentication…
+2026-07-08T17:43:10.951+05:30 [gateway] starting...
+2026-07-08T17:43:13.907+05:30 [gateway] starting HTTP server...
+2026-07-08T17:43:13.914+05:30 [canvas] host mounted at http://0.0.0.0:19789/__openclaw__/canvas/ (root /home/openclaw/.openclaw-backlink/canvas)
+2026-07-08T17:43:13.918+05:30 [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-07-08T17:43:14.091+05:30 [health-monitor] started (interval: 300s, startup-grace: 60s, channel-connect-grace: 120s)
+2026-07-08T17:43:14.418+05:30 [gateway] agent model: local-bifrost/vertex/gemini-3.1-flash-lite
+2026-07-08T17:43:14.421+05:30 [gateway] ready (7 plugins: acpx, backlink-onboarder, browser, device-pair, phone-control, talk-voice, telegram; 3.5s)
+2026-07-08T17:43:14.423+05:30 [gateway] log file: /tmp/openclaw/openclaw-2026-07-08.log
+2026-07-08T17:43:14.426+05:30 [gateway] security warning: dangerous config flags enabled: gateway.controlUi.allowInsecureAuth=true. Run `openclaw security audit`.
+2026-07-08T17:43:14.440+05:30 [heartbeat] started
+2026-07-08T17:43:14.462+05:30 [gateway] starting channels and sidecars...
+2026-07-08T17:43:14.915+05:30 [hooks] loaded 4 internal hook handlers
+2026-07-08T17:43:21.861+05:30 [bonjour] watchdog detected non-announced service; attempting re-advertise (gateway fqdn=7dfb7fd28559 (OpenClaw)._openclaw-gw._tcp.local. host=openclaw.local. port=19789 state=probing)
+2026-07-08T17:44:45.480+05:30 [channels] failed to load bundled channel whatsapp: npm error code ENOENT
+npm error syscall spawn git
+npm error path git
+npm error errno -2
+npm error enoent An unknown git error occurred
+npm error enoent This is related to npm not being able to find a file.
+npm error enoent
+npm error A complete log of this run can be found in: /home/openclaw/.npm/_logs/2026-07-08T12_14_13_478Z-debug-0.log
+2026-07-08T17:44:51.806+05:30 [bonjour] restarting advertiser (service stuck in announcing for 89947ms (gateway fqdn=7dfb7fd28559 (OpenClaw)._openclaw-gw._tcp.local. host=openclaw.local. port=19789 state=announcing))
+2026-07-08T17:44:54.555+05:30 [plugins] embedded acpx runtime backend registered (cwd: /home/openclaw/.openclaw-backlink/workspace-bl-orchestrator)
+2026-07-08T17:44:55.132+05:30 [browser/server] Browser control listening on http://127.0.0.1:19791/ (auth=token)
+2026-07-08T17:44:57.010+05:30 [telegram] [backlink] starting provider (@backlinks_agent_bot)
+2026-07-08T17:45:15.381+05:30 [plugins] backlink-onboarder: /onboard already present in Telegram menu
+2026-07-08T17:45:17.715+05:30 [plugins] embedded acpx runtime backend ready
+2026-07-08T17:59:43.392+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T17:59:46.772+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T17:59:52.239+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:01.515+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:01.539+05:30 [agent/embedded] embedded run failover decision: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:00:01.542+05:30 [diagnostic] lane task error: lane=main durationMs=32887 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:00:01.544+05:30 [diagnostic] lane task error: lane=session:agent:bl-gate:main durationMs=32892 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:00:01.550+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=Connection error.
+2026-07-08T18:00:04.393+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:07.773+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:13.076+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:22.385+05:30 [agent/embedded] embedded run agent end: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:00:22.396+05:30 [agent/embedded] embedded run failover decision: runId=7190b8f9-2a76-451f-8871-f1db6095cd6d stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:00:22.398+05:30 [diagnostic] lane task error: lane=main durationMs=20846 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:00:22.399+05:30 [diagnostic] lane task error: lane=session:agent:bl-gate:main durationMs=20847 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:00:22.401+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=none detail=Connection error.
+2026-07-08T18:00:22.404+05:30 [ws] ⇄ res ✗ agent errorCode=UNAVAILABLE errorMessage=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) | local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) runId=7190b8f9-2a76-451f-8871-f1db6095cd6d error=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) | local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) conn=c8d02af4…9799 id=c8554064…80e3
+2026-07-08T18:00:55.826+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513831507 finishedAt=1783513855822 durationMs=24315 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:00:55.828+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 2.33s.
+2026-07-08T18:00:58.161+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:00:58.164+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:01:00.321+05:30 [diagnostic] lane task error: lane=main durationMs=10384 error="Error: session file locked (timeout 10000ms): pid=543 /home/openclaw/.openclaw-backlink/agents/bl-gate/sessions/a8c077b2-1c8b-4b4b-93f0-6127a196089a.jsonl.lock"
+2026-07-08T18:01:00.322+05:30 [diagnostic] lane task error: lane=session:agent:bl-gate:main durationMs=10386 error="Error: session file locked (timeout 10000ms): pid=543 /home/openclaw/.openclaw-backlink/agents/bl-gate/sessions/a8c077b2-1c8b-4b4b-93f0-6127a196089a.jsonl.lock"
+2026-07-08T18:01:00.325+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=session file locked (timeout 10000ms): pid=543 /home/openclaw/.openclaw-backlink/agents/bl-gate/sessions/a8c077b2-1c8b-4b4b-93f0-6127a196089a.jsonl.lock
+2026-07-08T18:01:03.963+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513859788 finishedAt=1783513863961 durationMs=4173 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:01:03.964+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 3.61s.
+2026-07-08T18:01:05.666+05:30 [agent/embedded] embedded run agent end: runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:07.582+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:01:07.584+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:01:09.171+05:30 [agent/embedded] embedded run agent end: runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:14.586+05:30 [agent/embedded] embedded run agent end: runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:14.679+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513869223 finishedAt=1783513874678 durationMs=5455 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:01:14.681+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 6.74s.
+2026-07-08T18:01:21.418+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:01:21.421+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:01:23.836+05:30 [agent/embedded] embedded run agent end: runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:23.846+05:30 [agent/embedded] embedded run failover decision: runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:01:23.848+05:30 [diagnostic] lane task error: lane=main durationMs=23520 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:01:23.849+05:30 [diagnostic] lane task error: lane=session:agent:bl-gate:main durationMs=23522 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:01:23.850+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=none detail=Connection error.
+2026-07-08T18:01:23.852+05:30 [ws] ⇄ res ✗ agent errorCode=UNAVAILABLE errorMessage=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: session file locked (timeout 10000ms): pid=543 /home/openclaw/.openclaw-backlink/agents/bl-gate/sessions/a8c077b2-1c8b-4b4b-93f0-6127a196089a.jsonl.loc... runId=e7193cdc-666a-4b9c-bd40-9da56f8d2219 error=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: session file locked (timeout 10000ms): pid=543 /home/openclaw/.openclaw-backlink/agents/bl-gate/sessions/a8c077b2-1c8b-4b4b-93f0-6127a196089a.jsonl.loc... conn=38b5994e…4686 id=25859e29…deee
+2026-07-08T18:01:32.670+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:01:33.914+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513886701 finishedAt=1783513893912 durationMs=7211 offset=204290279 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:01:33.917+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 12.12s.
+2026-07-08T18:01:34.734+05:30 [tools] tools.profile (coding) allowlist contains unknown entries (nodes, gateway). These entries are shipped core tools but unavailable in the current runtime/provider/model/config.
+2026-07-08T18:01:34.735+05:30 [tools] agents.bl-orchestrator.tools.allow allowlist contains unknown entries (nodes, gateway). These entries are shipped core tools but unavailable in the current runtime/provider/model/config.
+2026-07-08T18:01:34.824+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:01:36.091+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:39.350+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:44.606+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:46.047+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:01:46.049+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:01:46.307+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:01:48.395+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:01:51.411+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:01:53.795+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:53.804+05:30 [agent/embedded] embedded run failover decision: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:01:53.806+05:30 [diagnostic] lane task error: lane=main durationMs=23406 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:01:53.807+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=23407 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:01:53.808+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=Connection error.
+2026-07-08T18:01:54.316+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:01:55.296+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:01:55.336+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:01:56.668+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:01:58.309+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:00.001+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:02:00.623+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:03.637+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:03.746+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513907656 finishedAt=1783513923744 durationMs=16088 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:02:03.747+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 22.13s.
+2026-07-08T18:02:05.240+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:02:06.625+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:09.641+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:12.621+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:02:14.554+05:30 [agent/embedded] embedded run agent end: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:02:14.563+05:30 [agent/embedded] embedded run failover decision: runId=04f0b75c-4966-461c-8bae-f334c5c25cbd stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:02:14.564+05:30 [diagnostic] lane task error: lane=main durationMs=20693 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:02:14.565+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=20694 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:02:14.589+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=none detail=Connection error.
+2026-07-08T18:02:14.590+05:30 Embedded agent failed before reply: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) | local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | LLM request failed: network connection error.
+2026-07-08T18:02:15.620+05:30 [telegram] sendMessage failed: Network request for 'sendMessage' failed!
+2026-07-08T18:02:15.622+05:30 [telegram] final reply failed: HttpError: Network request for 'sendMessage' failed!
+2026-07-08T18:02:16.616+05:30 [telegram] sendMessage failed: Network request for 'sendMessage' failed!
+2026-07-08T18:02:16.618+05:30 [telegram] message processing failed: HttpError: Network request for 'sendMessage' failed!
+2026-07-08T18:02:25.875+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:02:25.877+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:02:51.458+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783513947776 finishedAt=1783513971455 durationMs=23679 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:02:51.460+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:03:21.462+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:03:21.469+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:03:29.903+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:03:30.923+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:03:32.157+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:03:35.414+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:03:40.733+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:03:50.098+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:03:50.108+05:30 [agent/embedded] embedded run failover decision: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:03:50.110+05:30 [diagnostic] lane task error: lane=main durationMs=20217 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:03:50.116+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=20218 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:03:50.121+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=Connection error.
+2026-07-08T18:03:50.161+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:03:51.269+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:03:52.742+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:03:55.064+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514008479 finishedAt=1783514035062 durationMs=26583 offset=204290280 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:03:55.065+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:03:56.171+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:04:01.615+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:04:10.972+05:30 [agent/embedded] embedded run agent end: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:04:10.985+05:30 [agent/embedded] embedded run failover decision: runId=5214ae96-25fc-4d06-a9b1-378323b465c3 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:04:10.986+05:30 [diagnostic] lane task error: lane=main durationMs=20835 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:04:10.986+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=20836 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:04:11.003+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=none detail=Connection error.
+2026-07-08T18:04:11.004+05:30 Embedded agent failed before reply: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) | local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | LLM request failed: network connection error.
+2026-07-08T18:04:25.067+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:04:25.070+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:05:00.817+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514096849 finishedAt=1783514100816 durationMs=3967 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:05:00.819+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:05:33.962+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:05:33.965+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:05:36.074+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:05:39.474+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:05:44.838+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:05:54.125+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:05:54.134+05:30 [agent/embedded] embedded run failover decision: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:05:54.136+05:30 [diagnostic] lane task error: lane=main durationMs=27540 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:05:54.137+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=27541 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:05:54.139+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=local-bifrost/vertex/gemini-3.1-flash-lite detail=Connection error.
+2026-07-08T18:05:56.550+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:05:59.806+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:06:05.283+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:06:08.270+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514166341 finishedAt=1783514168268 durationMs=1927 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:06:08.271+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:06:14.631+05:30 [agent/embedded] embedded run agent end: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:06:14.639+05:30 [agent/embedded] embedded run failover decision: runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:06:14.641+05:30 [diagnostic] lane task error: lane=main durationMs=20500 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:06:14.641+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=20501 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:06:14.643+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=none detail=Connection error.
+2026-07-08T18:06:14.644+05:30 [ws] ⇄ res ✗ agent errorCode=UNAVAILABLE errorMessage=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) runId=2f1c657b-9836-4198-9dee-d83ec78e62e5 error=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) conn=53c4f56d…ddd7 id=3b3bae15…94a4
+2026-07-08T18:06:38.274+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:06:38.277+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:07:11.919+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514230360 finishedAt=1783514231918 durationMs=1558 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:07:11.921+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:07:21.574+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:24.964+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:30.419+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:39.760+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:39.771+05:30 [agent/embedded] embedded run failover decision: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:07:39.776+05:30 [diagnostic] lane task error: lane=main durationMs=20528 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:07:39.778+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=20532 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:07:39.779+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=local-bifrost/vertex/gemini-3.1-flash-lite detail=Connection error.
+2026-07-08T18:07:41.923+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:07:41.925+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:07:42.260+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:45.576+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:07:50.859+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:08:00.211+05:30 [agent/embedded] embedded run agent end: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:08:00.223+05:30 [agent/embedded] embedded run failover decision: runId=0473cfb3-718d-457f-8277-8cf1758cd7ad stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:08:00.224+05:30 [diagnostic] lane task error: lane=main durationMs=20442 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:08:00.225+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=20443 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:08:00.226+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=none detail=Connection error.
+2026-07-08T18:08:00.230+05:30 [ws] ⇄ res ✗ agent errorCode=UNAVAILABLE errorMessage=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) runId=0473cfb3-718d-457f-8277-8cf1758cd7ad error=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) conn=e060761a…0e2b id=e7682757…3911
+2026-07-08T18:08:16.207+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514294737 finishedAt=1783514296205 durationMs=1468 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:08:16.209+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:08:46.210+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:08:46.213+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:09:03.092+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:06.377+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:11.794+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:19.944+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514358927 finishedAt=1783514359942 durationMs=1015 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:09:19.945+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:09:21.119+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:21.130+05:30 [agent/embedded] embedded run failover decision: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:09:21.131+05:30 [diagnostic] lane task error: lane=main durationMs=20365 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:09:21.132+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=20366 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:09:21.134+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=local-bifrost/vertex/gemini-3.1-flash-lite detail=Connection error.
+2026-07-08T18:09:23.339+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:26.669+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:32.058+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:41.292+05:30 [agent/embedded] embedded run agent end: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:09:41.301+05:30 [agent/embedded] embedded run failover decision: runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:09:41.302+05:30 [diagnostic] lane task error: lane=main durationMs=20167 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:09:41.303+05:30 [diagnostic] lane task error: lane=session:agent:bl-content:main durationMs=20167 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:09:41.304+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-2.5-flash candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=none detail=Connection error.
+2026-07-08T18:09:41.306+05:30 [ws] ⇄ res ✗ agent errorCode=UNAVAILABLE errorMessage=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) runId=d5ebf150-1b49-4f52-9f24-c8037cf4c027 error=FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) conn=4701483f…4942 id=1be32e0c…337d
+2026-07-08T18:09:49.946+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:09:49.954+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:10:55.212+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514453679 finishedAt=1783514455210 durationMs=1531 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:10:55.213+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:11:25.213+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:11:25.217+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:11:58.839+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514517375 finishedAt=1783514518837 durationMs=1462 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:11:58.842+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:12:28.843+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:12:28.847+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:13:02.104+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514580608 finishedAt=1783514582102 durationMs=1494 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:13:02.105+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:13:32.107+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:13:32.110+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:14:03.040+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:14:04.044+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:14:05.318+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:05.795+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514640617 finishedAt=1783514645793 durationMs=5176 offset=204290284 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:14:05.797+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:14:08.537+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:14.023+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:23.302+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:23.311+05:30 [agent/embedded] embedded run failover decision: runId=9cc334d6-6877-467e-9ef8-8912533e1423 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:14:23.313+05:30 [diagnostic] lane task error: lane=main durationMs=20288 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:14:23.314+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=20289 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:14:23.316+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=Connection error.
+2026-07-08T18:14:23.345+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:14:24.390+05:30 [plugins] backlink-onboarder: dynamic scope https://pixelpunch.org for group -1004318172385
+2026-07-08T18:14:25.687+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:29.014+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:34.352+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:35.797+05:30 [telegram] [diag] closing stale transport before rebuild
+2026-07-08T18:14:35.800+05:30 [telegram] [diag] rebuilding transport for next polling cycle
+2026-07-08T18:14:36.519+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:14:39.029+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:14:42.044+05:30 [telegram] sendChatAction failed: Network request for 'sendChatAction' failed!
+2026-07-08T18:14:43.710+05:30 [agent/embedded] embedded run agent end: runId=9cc334d6-6877-467e-9ef8-8912533e1423 isError=true model=vertex/gemini-2.5-flash provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:14:43.719+05:30 [agent/embedded] embedded run failover decision: runId=9cc334d6-6877-467e-9ef8-8912533e1423 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-2.5-flash profile=- rawError=Connection error.
+2026-07-08T18:14:43.721+05:30 [diagnostic] lane task error: lane=main durationMs=20387 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:14:43.722+05:30 [diagnostic] lane task error: lane=session:agent:bl-orchestrator:telegram:group:-1004318172385 durationMs=20388 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:14:43.746+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-2.5-flash reason=timeout next=none detail=Connection error.
+2026-07-08T18:14:43.747+05:30 Embedded agent failed before reply: All models failed (2): local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout) | local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | LLM request failed: network connection error.
+2026-07-08T18:14:44.771+05:30 [telegram] sendMessage failed: Network request for 'sendMessage' failed!
+2026-07-08T18:14:44.781+05:30 [telegram] final reply failed: HttpError: Network request for 'sendMessage' failed!
+2026-07-08T18:14:45.767+05:30 [telegram] sendMessage failed: Network request for 'sendMessage' failed!
+2026-07-08T18:14:45.768+05:30 [telegram] message processing failed: HttpError: Network request for 'sendMessage' failed!
+2026-07-08T18:15:07.662+05:30 [agent/embedded] embedded run agent end: runId=285cbdba-ec34-4b61-a4ce-5912164bfbc4 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:15:10.600+05:30 [telegram] [diag] polling cycle error reason=getUpdates conflict inFlight=0 outcome=ok startedAt=1783514709073 finishedAt=1783514710598 durationMs=1525 offset=0 err=Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running)
+2026-07-08T18:15:10.604+05:30 [telegram] getUpdates conflict: Call to 'getUpdates' failed! (409: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running); retrying in 30s.
+2026-07-08T18:15:11.013+05:30 [agent/embedded] embedded run agent end: runId=285cbdba-ec34-4b61-a4ce-5912164bfbc4 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:15:16.426+05:30 [agent/embedded] embedded run agent end: runId=285cbdba-ec34-4b61-a4ce-5912164bfbc4 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:15:25.696+05:30 [agent/embedded] embedded run agent end: runId=285cbdba-ec34-4b61-a4ce-5912164bfbc4 isError=true model=vertex/gemini-3.1-flash-lite provider=local-bifrost error=LLM request failed: network connection error. rawError=Connection error.
+2026-07-08T18:15:25.706+05:30 [agent/embedded] embedded run failover decision: runId=285cbdba-ec34-4b61-a4ce-5912164bfbc4 stage=assistant decision=fallback_model reason=timeout from=local-bifrost/vertex/gemini-3.1-flash-lite profile=- rawError=Connection error.
+2026-07-08T18:15:25.707+05:30 [diagnostic] lane task error: lane=main durationMs=20486 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:15:25.708+05:30 [diagnostic] lane task error: lane=session:agent:bl-gate:main durationMs=20487 error="FailoverError: LLM request failed: network connection error."
+2026-07-08T18:15:25.711+05:30 [model-fallback/decision] model fallback decision: decision=candidate_failed requested=local-bifrost/vertex/gemini-3.1-flash-lite candidate=local-bifrost/vertex/gemini-3.1-flash-lite reason=timeout next=local-bifrost/vertex/gemini-2.5-flash detail=Connection error.

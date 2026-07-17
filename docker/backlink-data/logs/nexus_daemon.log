@@ -1,0 +1,223 @@
+[run_daemon] launching nexus_daemon.py at 2026-07-08T17:17:40+0530
+[nexus 2026-07-08 17:17:40] daemon start: db=/home/openclaw/.openclaw-backlink/data/backlink.db air_gap=30s sites_per_tick=5 scan_max=20 backoff=0.25h draft_batch=1-5 delivery_every=60m
+[nexus 2026-07-08 17:17:40] scan: visiting okx.com (project=https://coinography.com)
+[nexus 2026-07-08 17:17:45] scan: ok on okx.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:17:45] scan: visiting theblockverse.co (project=https://coinography.com)
+[nexus 2026-07-08 17:17:49] scan: ok on theblockverse.co via rss_sitemap -> 2 found, 2 new (reschedule +30m)
+[nexus 2026-07-08 17:17:49] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[nexus 2026-07-08 17:18:23] scan: ok on forums.feedspot.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:18:23] scan: visiting pebforum.com (project=https://coinography.com)
+[run_daemon] launching nexus_daemon.py at 2026-07-08T17:40:03+0530
+[nexus 2026-07-08 17:40:03] daemon start: db=/home/openclaw/.openclaw-backlink/data/backlink.db air_gap=30s sites_per_tick=5 scan_max=20 backoff=0.25h draft_batch=1-5 delivery_every=60m
+[nexus 2026-07-08 17:40:03] scan: visiting pebforum.com (project=https://coinography.com)
+[nexus 2026-07-08 17:40:23] scan: ok on pebforum.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:40:23] scan: visiting breet.io (project=https://coinography.com)
+[nexus 2026-07-08 17:41:04] scan: ok on breet.io via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:41:04] scan: visiting coinspot.io (project=https://coinography.com)
+[nexus 2026-07-08 17:41:09] scan: empty on coinspot.io via rss_sitemap -> 0 found, 0 new (reschedule +30m)
+[nexus 2026-07-08 17:41:09] scan: visiting okx.com (project=https://coinography.com)
+[nexus 2026-07-08 17:41:59] scan: ok on okx.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:41:59] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[run_daemon] launching nexus_daemon.py at 2026-07-08T17:42:43+0530
+[nexus 2026-07-08 17:42:43] daemon start: db=/home/openclaw/.openclaw-backlink/data/backlink.db air_gap=30s sites_per_tick=5 scan_max=20 backoff=0.25h draft_batch=1-5 delivery_every=60m
+[nexus 2026-07-08 17:42:43] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[run_daemon] launching nexus_daemon.py at 2026-07-08T17:42:53+0530
+[nexus 2026-07-08 17:42:53] daemon start: db=/home/openclaw/.openclaw-backlink/data/backlink.db air_gap=30s sites_per_tick=5 scan_max=20 backoff=0.25h draft_batch=1-5 delivery_every=60m
+[nexus 2026-07-08 17:42:53] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[run_daemon] launching nexus_daemon.py at 2026-07-08T17:43:03+0530
+[nexus 2026-07-08 17:43:04] daemon start: db=/home/openclaw/.openclaw-backlink/data/backlink.db air_gap=30s sites_per_tick=5 scan_max=20 backoff=0.25h draft_batch=1-5 delivery_every=60m
+[nexus 2026-07-08 17:43:04] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[nexus 2026-07-08 17:46:04] scan: ok on forums.feedspot.com via generic_search -> 8 found, 8 new (reschedule +30m)
+[nexus 2026-07-08 17:46:04] scan: visiting blockchainster.com (project=https://coinography.com)
+[nexus 2026-07-08 17:49:35] scan: ok on blockchainster.com via generic_search -> 1 found, 1 new (reschedule +30m)
+[nexus 2026-07-08 17:49:35] scan: visiting indiehackers.com (project=https://coinography.com)
+[search_tool] all backends failed: No results found.
+[nexus 2026-07-08 17:53:32] scan: ok on indiehackers.com via generic_search -> 13 found, 13 new (reschedule +30m)
+[nexus 2026-07-08 17:53:32] scan: visiting x.com (project=https://coinography.com)
+[nexus 2026-07-08 17:56:57] scan: ok on x.com via generic_search -> 12 found, 12 new (reschedule +30m)
+[nexus 2026-07-08 17:56:57] scan: visiting cryptotalk.org (project=https://coinography.com)
+[nexus 2026-07-08 17:59:08] scan: ok on cryptotalk.org via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 17:59:09] score: 175 leads scored -> SCORED
+[nexus 2026-07-08 18:00:39] [gate|info] agent timed out
+[nexus 2026-07-08 18:00:39] [gate|info] agent failed, falling back to direct API
+[nexus 2026-07-08 18:00:39] [gate|info] direct API model=vertex/gemini-3.1-flash-lite failed: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:00:39] [gate|info] direct API model=vertex/gemini-2.5-flash failed: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:00:39] [gate|info] direct API exhausted: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:00:39] gate: project=https://coinography.com judged=20 passed=20
+[nexus 2026-07-08 18:02:09] [gate|info] agent timed out
+[nexus 2026-07-08 18:02:09] [gate|info] agent failed, falling back to direct API
+[nexus 2026-07-08 18:02:09] [gate|info] direct API model=vertex/gemini-3.1-flash-lite failed: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:02:09] [gate|info] direct API model=vertex/gemini-2.5-flash failed: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:02:09] [gate|info] direct API exhausted: <urlopen error [Errno 101] Network is unreachable>
+[nexus 2026-07-08 18:02:09] gate: project=https://pixelpunch.org judged=15 passed=15
+[nexus 2026-07-08 18:02:10] resurface: ERROR bl-farm-1-20260625-191046-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:10] resurface: ERROR bl-farm-1-20260625-191046-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:11] resurface: ERROR bl-farm-1-20260625-103506-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:13] resurface: ERROR bl-farm-1-20260625-103506-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:14] resurface: ERROR bl-farm-11-20260625-103610-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:14] resurface: ERROR bl-farm-11-20260625-103610-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:15] resurface: ERROR bl-farm-1-20260625-105917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:16] resurface: ERROR bl-farm-1-20260625-105917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:16] resurface: ERROR bl-farm-1-20260625-105917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:17] resurface: ERROR bl-farm-1-20260625-115423-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:18] resurface: ERROR bl-farm-1-20260625-115423-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:18] resurface: ERROR bl-farm-1-20260625-115613-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:19] resurface: ERROR bl-farm-1-20260625-115613-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:19] resurface: ERROR bl-farm-1-20260625-115613-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:20] resurface: ERROR bl-farm-1-20260625-115613-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:21] resurface: ERROR bl-farm-1-20260625-115613-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:21] resurface: ERROR bl-farm-1-20260625-121528-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:22] resurface: ERROR bl-farm-1-20260625-121528-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:23] resurface: ERROR bl-farm-1-20260625-121528-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:23] resurface: ERROR bl-farm-1-20260626-125925-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:24] resurface: ERROR bl-farm-1-20260626-165515-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:24] resurface: ERROR bl-farm-1-20260626-170842-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:25] resurface: ERROR bl-farm-1-20260626-170842-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:26] resurface: ERROR bl-farm-1-20260626-170842-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:26] resurface: ERROR bl-farm-1-20260626-181309-bitcointalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:27] resurface: ERROR bl-farm-1-20260626-181309-cryptotalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:28] resurface: ERROR bl-farm-1-20260626-181309-cryptotalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:28] resurface: ERROR bl-farm-1-20260626-181309-cryptotalk-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:29] resurface: ERROR bl-farm-1-20260626-182204-coingabbar-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:29] resurface: ERROR bl-farm-1-20260626-182204-theblockverse-co: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:30] resurface: ERROR bl-farm-1-20260626-182204-theblockverse-co: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:31] resurface: ERROR bl-farm-1-20260626-182204-theblockverse-co: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:31] resurface: ERROR bl-farm-1-20260626-182204-theblockverse-co: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:32] resurface: ERROR bl-farm-1-20260625-121528-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:32] resurface: ERROR bl-farm-1-20260625-121528-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:33] resurface: ERROR bl-farm-1-20260625-122132-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:34] resurface: ERROR bl-farm-1-20260625-122132-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:34] resurface: ERROR bl-farm-1-20260625-122132-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:35] resurface: ERROR bl-farm-1-20260626-120538-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:36] resurface: ERROR bl-farm-1-20260626-120538-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:36] resurface: ERROR bl-farm-1-20260626-120538-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:37] resurface: ERROR bl-farm-1-20260626-120538-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:38] resurface: ERROR bl-farm-1-20260626-125925-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:38] resurface: ERROR bl-farm-1-20260626-125925-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:39] resurface: ERROR bl-farm-1-20260626-125925-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:41] resurface: ERROR bl-farm-1-20260625-130917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:41] resurface: ERROR bl-farm-1-20260625-130917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:42] resurface: ERROR bl-farm-1-20260626-140030-digitalcryptosolutions-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:43] resurface: ERROR bl-farm-1-20260626-140030-consensys-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:43] resurface: ERROR bl-farm-1-20260626-140030-icoholder-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:44] resurface: ERROR bl-farm-1-20260626-155212-volet-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:44] resurface: ERROR bl-farm-1-20260626-155212-binance-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:45] resurface: ERROR bl-farm-1-20260626-155212-medium-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:46] resurface: ERROR bl-farm-1-20260703-122559-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:46] resurface: ERROR bl-farm-1-20260703-122559-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:47] resurface: ERROR bl-farm-1-20260703-122559-indiehackers-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:48] resurface: ERROR bl-farm-1-20260703-122559-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:48] resurface: ERROR bl-farm-1-20260703-122559-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:49] resurface: ERROR bl-farm-1-20260626-155212-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:50] resurface: ERROR bl-farm-1-20260626-164436-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:50] resurface: ERROR bl-farm-1-20260626-164436-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:52] resurface: ERROR bl-farm-1-20260626-164436-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:52] resurface: ERROR bl-farm-1-20260626-165515-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:53] resurface: ERROR bl-farm-1-20260626-165515-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:54] resurface: ERROR bl-farm-1-20260625-130917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:54] resurface: ERROR bl-farm-1-20260625-130917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:56] resurface: ERROR bl-farm-1-20260625-130917-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:57] resurface: ERROR bl-farm-1-20260625-115423-reddit-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:57] resurface: ERROR bl-farm-1-20260625-191046-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:58] resurface: ERROR bl-farm-1-20260703-125717-okx-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:58] resurface: ERROR bl-farm-1-20260703-125717-discussier-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:02:59] resurface: ERROR bl-farm-1-20260703-125717-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:00] resurface: ERROR bl-farm-1-20260703-125717-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:00] resurface: ERROR bl-farm-1-20260703-125717-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:04] resurface: ERROR bl-farm-1-20260703-133108-coingabbar-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:04] resurface: ERROR bl-farm-1-20260703-133108-news-ycombinator-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:05] resurface: ERROR bl-farm-1-20260703-133108-altcoininvestor-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:06] resurface: ERROR bl-farm-1-20260703-133108-breet-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:08] resurface: ERROR bl-farm-1-20260703-133108-academy-coingabbar-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:08] resurface: ERROR bl-farm-1-20260703-140658-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:09] resurface: ERROR bl-farm-1-20260703-140658-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:10] resurface: ERROR bl-farm-1-20260703-140658-forums-feedspot-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:11] resurface: ERROR bl-farm-1-20260703-140658-eb3-okx-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:12] resurface: ERROR bl-farm-1-20260703-140658-theblockverse-co: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:12] resurface: ERROR bl-farm-1-20260703-144057-eb3-okx-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:13] resurface: ERROR bl-farm-1-20260703-144057-breet-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:13] resurface: ERROR bl-farm-1-20260703-144057-academy-coingabbar-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:14] resurface: ERROR bl-farm-1-20260703-144057-x-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:15] resurface: ERROR bl-farm-1-20260703-144057-blockchainforum-xyz: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:15] resurface: ERROR bl-farm-1-20260703-151355-coinspot-io: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:16] resurface: ERROR bl-farm-1-20260703-151355-thehiveindex-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:17] resurface: ERROR bl-farm-1-20260703-151355-cryptolinks-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:18] resurface: ERROR bl-farm-1-20260703-151355-captainaltcoin-com: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:18] resurface: ERROR bl-farm-1-20260703-151355-bitdegree-org: Telegram sendMessage HTTP 400: Bad Request: group chat was upgraded to a supergroup chat
+[nexus 2026-07-08 18:03:20] resurface: re-sent bl-farm-21-20260703-161305-news-ycombinator-com for https://news.ycombinator.com/item?id=48628645
+[nexus 2026-07-08 18:03:22] resurface: re-sent bl-farm-21-20260703-161305-news-ycombinator-com for https://news.ycombinator.com/item?id=48643127
+[nexus 2026-07-08 18:03:27] resurface: re-sent bl-farm-21-20260703-161305-news-ycombinator-com for https://news.ycombinator.com/item?id=48009866
+[nexus 2026-07-08 18:03:29] resurface: re-sent bl-farm-21-20260703-161305-news-ycombinator-com for https://news.ycombinator.com/item?id=48029639
+[nexus 2026-07-08 18:03:31] resurface: re-sent bl-farm-21-20260703-161305-news-ycombinator-com for https://news.ycombinator.com/item?id=48041880
+[nexus 2026-07-08 18:03:33] resurface: re-sent bl-farm-1-20260703-163837-trendri-com for https://www.trendri.com/forums/cryptocurrency/
+[nexus 2026-07-08 18:03:35] resurface: re-sent bl-farm-1-20260703-163837-cryptosphyr-com for https://www.cryptosphyr.com/verdifjord-review/
+[nexus 2026-07-08 18:03:40] resurface: re-sent bl-farm-1-20260703-163837-cryptosphyr-com for https://www.cryptosphyr.com/quantum-opredex-review/
+[nexus 2026-07-08 18:03:42] resurface: re-sent bl-farm-1-20260703-163837-breet-io for https://breet.io/blog/what-is-the-best-cryptocurrency-wallet-in-nigeria
+[nexus 2026-07-08 18:03:43] resurface: re-sent bl-farm-1-20260703-163837-blockchainforum-xyz for https://blockchainforum.xyz/index.php?categories/specific-blockchain-discussion.195/
+[nexus 2026-07-08 18:03:45] resurface: re-sent bl-farm-21-20260703-164844-news-ycombinator-com for https://news.ycombinator.com/item?id=48402210
+[nexus 2026-07-08 18:03:47] resurface: re-sent bl-farm-21-20260703-164844-news-ycombinator-com for https://news.ycombinator.com/item?id=48433269
+[nexus 2026-07-08 18:03:50] resurface: re-sent bl-farm-21-20260703-164844-news-ycombinator-com for https://news.ycombinator.com/item?id=48452212
+[nexus 2026-07-08 18:03:52] resurface: re-sent bl-farm-21-20260703-164844-news-ycombinator-com for https://news.ycombinator.com/item?id=48463297
+[nexus 2026-07-08 18:03:54] resurface: re-sent bl-farm-21-20260703-164844-news-ycombinator-com for https://news.ycombinator.com/item?id=48542773
+[nexus 2026-07-08 18:03:56] resurface: re-sent bl-farm-1-20260703-172023-help-breet-io for https://help.breet.io/en/articles/12150186-breet-vip-partner-dashboard
+[nexus 2026-07-08 18:03:58] resurface: re-sent bl-farm-1-20260703-172023-news-ycombinator-com for https://news.ycombinator.com/item?id=48733419
+[nexus 2026-07-08 18:04:03] resurface: re-sent bl-farm-1-20260703-172023-blackhatworld-com for https://www.blackhatworld.com/forums/cryptocurrency.218/
+[nexus 2026-07-08 18:04:06] resurface: re-sent bl-farm-1-20260703-172023-bitget-com for https://www.bitget.com/academy/crypto-forums-guide
+[nexus 2026-07-08 18:04:07] resurface: re-sent bl-farm-1-20260703-172023-news-ycombinator-com for https://news.ycombinator.com/item?id=48673148
+[nexus 2026-07-08 18:04:08] resurface: ERROR bl-farm-21-20260703-172113-news-ycombinator-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 11
+[nexus 2026-07-08 18:04:09] resurface: ERROR bl-farm-21-20260703-172113-beincrypto-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 10
+[nexus 2026-07-08 18:04:10] resurface: ERROR bl-farm-21-20260703-172113-coinspot-io: Telegram sendMessage HTTP 429: Too Many Requests: retry after 9
+[nexus 2026-07-08 18:04:19] resurface: ERROR bl-farm-21-20260703-172113-forums-feedspot-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 3
+[nexus 2026-07-08 18:04:21] resurface: re-sent bl-farm-21-20260703-172113-nansen-ai for https://nansen.ai/post/top-10-memecoin-wallets-to-track-for-2025
+[nexus 2026-07-08 18:04:21] resurface: ERROR bl-farm-1-20260703-175153-hedgewithcrypto-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 11
+[nexus 2026-07-08 18:04:22] resurface: ERROR bl-farm-1-20260703-175153-alternativeto-net: Telegram sendMessage HTTP 429: Too Many Requests: retry after 10
+[nexus 2026-07-08 18:04:23] resurface: ERROR bl-farm-1-20260703-175153-academy-swissborg-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 9
+[nexus 2026-07-08 18:04:33] resurface: re-sent bl-farm-1-20260703-175153-news-ycombinator-com for https://news.ycombinator.com/item?id=48674148
+[nexus 2026-07-08 18:04:35] resurface: re-sent bl-farm-1-20260703-175153-news-ycombinator-com for https://news.ycombinator.com/item?id=48674198
+[nexus 2026-07-08 18:04:37] resurface: re-sent bl-farm-21-20260703-175308-blocknuggets-com for https://blocknuggets.com/news/beginner-guide-memecoins-trading-questions/
+[nexus 2026-07-08 18:04:38] resurface: re-sent bl-farm-21-20260703-175308-news-ycombinator-com for https://news.ycombinator.com/item?id=48740313
+[nexus 2026-07-08 18:04:43] resurface: re-sent bl-farm-21-20260703-175308-news-ycombinator-com for https://news.ycombinator.com/item?id=47704556
+[nexus 2026-07-08 18:04:45] resurface: re-sent bl-farm-21-20260703-175308-x-com for https://x.com/wazobiacryptoo/status/2033420086061527420
+[nexus 2026-07-08 18:04:47] resurface: re-sent bl-farm-21-20260703-175308-bitcointalk-org for https://bitcointalk.org/index.php?topic=5491745.20
+[nexus 2026-07-08 18:04:50] resurface: re-sent bl-farm-1-20260703-180535-coingabbar-com for https://www.coingabbar.com/en/crypto-currency-news/spur-protocol-daily-quiz-answer-3-july-2026
+[nexus 2026-07-08 18:04:51] resurface: re-sent bl-farm-1-20260703-180535-coingabbar-com for https://www.coingabbar.com/en/price-prediction/bitcoin-price-prediction-btc-forecast-analysis
+[nexus 2026-07-08 18:04:54] resurface: re-sent bl-farm-1-20260703-180535-coingabbar-com for https://www.coingabbar.com/en/crypto-currency-news/syntax-verse-daily-quiz-answer-today-2-july-2026
+[nexus 2026-07-08 18:04:56] resurface: re-sent bl-farm-1-20260703-180535-news-ycombinator-com for https://news.ycombinator.com/item?id=48674412
+[nexus 2026-07-08 18:04:57] resurface: re-sent bl-farm-1-20260703-180535-news-ycombinator-com for https://news.ycombinator.com/item?id=48674450
+[nexus 2026-07-08 18:04:59] resurface: re-sent bl-farm-21-20260703-180628-cryptotalk-org for https://cryptotalk.org/topic/28176-new-team-member-netboxglobal-advisor-—-mr-artur-prints/
+[nexus 2026-07-08 18:05:01] resurface: re-sent bl-farm-21-20260703-180628-cryptotalk-org for https://cryptotalk.org/forum/58-referral-links/page/13/
+[nexus 2026-07-08 18:05:06] resurface: re-sent bl-farm-21-20260703-180628-indiehackers-com for https://www.indiehackers.com/post/i-help-people-create-memecoins-ask-me-anything-0b4acbb9dd
+[nexus 2026-07-08 18:05:08] resurface: re-sent bl-farm-21-20260703-180628-theblockverse-co for https://theblockverse.co/the-best-crypto-forums/
+[nexus 2026-07-08 18:05:08] resurface: ERROR bl-farm-21-20260703-180628-cryptocompare-com: Telegram sendMessage HTTP 429: Too Many Requests: retry after 12
+[nexus 2026-07-08 18:05:10] resurface: re-sent bl-farm-23-20260703-184447-x-com for https://x.com/Kai_Nimo02/status/2072531586906542391
+[nexus 2026-07-08 18:05:12] resurface: re-sent bl-farm-23-20260703-184447-x-com for https://x.com/kalp8955/status/2064991279847710796
+[nexus 2026-07-08 18:05:14] resurface: re-sent bl-farm-23-20260703-184447-x-com for https://x.com/bellaa_web3/status/2072637487898607827
+[nexus 2026-07-08 18:05:16] resurface: re-sent bl-farm-23-20260703-184447-x-com for https://x.com/olabestconcepts/status/2072972185375773156
+[nexus 2026-07-08 18:05:17] resurface: re-sent bl-farm-23-20260703-184447-x-com for https://x.com/alhadji_ACE/status/2072674845741953466
+[nexus 2026-07-08 18:05:17] resurface: 42 stale pending card(s) re-sent
+[nexus 2026-07-08 18:05:17] draft: project=https://coinography.com drafting 5 GATED leads
+[nexus 2026-07-08 18:07:11] draft: Ink returned 1: Gateway agent failed; falling back to embedded: GatewayClientRequestError: FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout)
+[agent/embedded] embedded run agent end
+[nexus 2026-07-08 18:07:11] draft: Ink produced no posts.json
+[nexus 2026-07-08 18:07:11] draft: FAILED for https://coinography.com: draft_failed
+[nexus 2026-07-08 18:07:11] draft: project=https://memecoinist.com drafting 5 GATED leads
+[nexus 2026-07-08 18:08:53] draft: Ink returned 1: Gateway agent failed; falling back to embedded: GatewayClientRequestError: FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout)
+[agent/embedded] embedded run agent end
+[nexus 2026-07-08 18:08:53] draft: Ink produced no posts.json
+[nexus 2026-07-08 18:08:53] draft: FAILED for https://memecoinist.com: draft_failed
+[nexus 2026-07-08 18:08:53] draft: project=https://pixelpunch.org drafting 5 GATED leads
+[nexus 2026-07-08 18:10:37] draft: Ink returned 1: Gateway agent failed; falling back to embedded: GatewayClientRequestError: FallbackSummaryError: All models failed (2): local-bifrost/vertex/gemini-2.5-flash: Connection error. (timeout) | local-bifrost/vertex/gemini-3.1-flash-lite: Connection error. (timeout)
+[agent/embedded] embedded run agent end
+[nexus 2026-07-08 18:10:37] draft: Ink produced no posts.json
+[nexus 2026-07-08 18:10:37] draft: FAILED for https://pixelpunch.org: draft_failed
+[nexus 2026-07-08 18:11:07] scan: visiting theblockverse.co (project=https://coinography.com)
+[nexus 2026-07-08 18:11:10] scan: empty on theblockverse.co via rss_sitemap -> 0 found, 0 new (reschedule +30m)
+[nexus 2026-07-08 18:11:10] scan: visiting pebforum.com (project=https://coinography.com)
+[nexus 2026-07-08 18:11:44] scan: ok on pebforum.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 18:11:44] scan: visiting breet.io (project=https://coinography.com)
+[nexus 2026-07-08 18:13:32] scan: ok on breet.io via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 18:13:32] scan: visiting okx.com (project=https://coinography.com)
+[nexus 2026-07-08 18:14:16] scan: ok on okx.com via generic_search -> 20 found, 20 new (reschedule +30m)
+[nexus 2026-07-08 18:14:16] scan: visiting forums.feedspot.com (project=https://coinography.com)
+[nexus 2026-07-08 18:14:56] scan: empty on forums.feedspot.com via generic_search -> 0 found, 0 new (reschedule +30m)
+[nexus 2026-07-08 18:14:56] score: 60 leads scored -> SCORED

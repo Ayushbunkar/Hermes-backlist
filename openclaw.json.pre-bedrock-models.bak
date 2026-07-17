@@ -1,0 +1,348 @@
+{
+  "env": {
+    "GOOGLE_CLOUD_PROJECT": "project-133cdfbf-a67a-492b-91c",
+    "GOOGLE_CLOUD_LOCATION": "us-central1",
+    "BIFROST_BASE_URL": "http://192.168.32.1:8888/v1",
+    "AWS_BEARER_TOKEN_BEDROCK": "ABSKQmVkcm9ja0FQSUtleS1iZHM5LWF0LTk3MjQ2MTIxODAzNDpHU1NHeFFmZlpNM2I5NTZidlNvdEZ4SkNIbzJZUWlGZTdVdWRPQTM3QmVoZ214SzVUc1pOUURrODdsMD0="
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-orchestrator",
+      "models": {},
+      "thinkingDefault": "medium",
+      "model": {
+        "primary": "local-bifrost/gemini-3.5-flash",
+        "fallbacks": [
+          "local-bifrost/gemini-3.1-pro-preview",
+          "local-bifrost/gemini-2.5-pro",
+          "local-bifrost/gemini-2.5-flash"
+        ]
+      },
+      "contextInjection": "always",
+      "bootstrapMaxChars": 50000,
+      "bootstrapTotalMaxChars": 300000
+    },
+    "list": [
+      {
+        "id": "bl-orchestrator",
+        "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-orchestrator",
+        "model": {
+          "primary": "local-bifrost/gemini-3.1-pro-preview"
+        },
+        "subagents": {
+          "allowAgents": [
+            "bl-site-finder",
+            "bl-opportunity-scanner",
+            "bl-score-critic",
+            "bl-content"
+          ]
+        },
+        "tools": {
+          "profile": "coding",
+          "alsoAllow": [
+            "agents_list",
+            "nodes",
+            "message",
+            "gateway",
+            "browser",
+            "canvas",
+            "tts",
+            "sessions_spawn",
+            "sessions_yield",
+            "subagents"
+          ]
+        }
+      },
+      {
+        "id": "bl-site-finder",
+        "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-site-finder",
+        "model": {
+          "primary": "local-bifrost/gemini-3.5-flash"
+        },
+        "tools": {
+          "profile": "coding",
+          "alsoAllow": [
+            "browser",
+            "web_search",
+            "web_fetch"
+          ]
+        }
+      },
+      {
+        "id": "bl-opportunity-scanner",
+        "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-opportunity-scanner",
+        "model": {
+          "primary": "local-bifrost/gemini-3.5-flash"
+        },
+        "tools": {
+          "profile": "coding",
+          "alsoAllow": [
+            "browser",
+            "web_fetch"
+          ]
+        }
+      },
+      {
+        "id": "bl-score-critic",
+        "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-score-critic",
+        "model": {
+          "primary": "local-bifrost/gemini-3.5-flash"
+        },
+        "tools": {
+          "profile": "coding"
+        }
+      },
+      {
+        "id": "bl-content",
+        "workspace": "/home/bhard/.openclaw-backlink/workspace-bl-content",
+        "model": {
+          "primary": "local-bifrost/gemini-2.5-pro"
+        },
+        "tools": {
+          "deny": [
+            "image_generate"
+          ]
+        }
+      }
+    ]
+  },
+  "models": {
+    "mode": "replace",
+    "providers": {
+      "local-bifrost": {
+        "baseUrl": "http://192.168.32.1:8888/v1",
+        "api": "openai-completions",
+        "apiKey": "dummy",
+        "models": [
+          {
+            "id": "gemini-3.1-pro-preview",
+            "name": "Gemini 3.1 Pro (Bifrost Vertex)",
+            "contextWindow": 200000,
+            "maxTokens": 32768,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "reasoning": true
+          },
+          {
+            "id": "gemini-3.5-flash",
+            "name": "Gemini 3.5 Flash (Bifrost Vertex)",
+            "contextWindow": 200000,
+            "maxTokens": 16384,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "reasoning": true
+          },
+          {
+            "id": "gemini-2.5-pro",
+            "name": "Gemini 2.5 Pro (Bifrost Vertex)",
+            "contextWindow": 200000,
+            "maxTokens": 32768,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "reasoning": true
+          },
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash (Bifrost Vertex)",
+            "contextWindow": 128000,
+            "maxTokens": 16384,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "reasoning": true
+          }
+        ]
+      }
+    }
+  },
+  "commands": {
+    "ownerAllowFrom": [
+      "telegram:5337250772"
+    ]
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "777936f42fc4a2163d41a9f4762bf2479e1e6e1951f3da7c"
+    },
+    "port": 19789,
+    "bind": "loopback",
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "controlUi": {
+      "allowInsecureAuth": true
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "contacts.add",
+        "calendar.add",
+        "reminders.add",
+        "sms.send",
+        "sms.search"
+      ]
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "browser": {
+    "enabled": true,
+    "defaultProfile": "openclaw",
+    "headless": true,
+    "noSandbox": true,
+    "executablePath": "/home/bhard/.openclaw-backlink/bin/chromium"
+  },
+  "tools": {
+    "profile": "coding",
+    "exec": {
+      "security": "full",
+      "ask": "off"
+    },
+    "web": {
+      "search": {
+        "provider": "searxng",
+        "enabled": true,
+        "openaiCodex": {}
+      },
+      "fetch": {
+        "enabled": true
+      }
+    }
+  },
+  "auth": {
+    "profiles": {
+      "openrouter:default": {
+        "provider": "openrouter",
+        "mode": "api_key"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "searxng": {
+        "enabled": true,
+        "config": {
+          "webSearch": {
+            "baseUrl": "https://paulgo.io"
+          }
+        }
+      },
+      "amazon-bedrock": {
+        "enabled": false
+      },
+      "openrouter": {
+        "enabled": true
+      },
+      "browser": {
+        "enabled": true
+      }
+    }
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "session-memory": {
+          "enabled": true
+        },
+        "boot-md": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "wizard": {
+    "lastRunAt": "2026-06-15T12:08:05.955Z",
+    "lastRunVersion": "2026.4.23",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.4.23",
+    "lastTouchedAt": "2026-06-17T08:35:00.000Z"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "defaultAccount": "backlink",
+      "groupPolicy": "open",
+      "accounts": {
+        "backlink": {
+          "name": "Backlink Agent",
+          "botToken": "8967981365:AAFxOtK_bRFYXUGW00uvQXy2bX-de2hxl-A",
+          "groupPolicy": "open",
+          "groups": {
+            "-5291081154": {
+              "requireMention": true
+            },
+            "*": {
+              "requireMention": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "bl-orchestrator",
+      "match": {
+        "channel": "telegram",
+        "accountId": "backlink",
+        "peer": {
+          "kind": "group",
+          "id": "-5291081154"
+        }
+      }
+    },
+    {
+      "agentId": "bl-orchestrator",
+      "match": {
+        "channel": "telegram",
+        "accountId": "backlink"
+      }
+    }
+  ],
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  }
+}
