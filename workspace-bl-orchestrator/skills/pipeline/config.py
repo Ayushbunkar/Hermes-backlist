@@ -30,6 +30,7 @@ BIFROST_BASE_URL = os.environ.get("BIFROST_BASE_URL", "http://192.168.32.1:8888/
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "vertex/gemini-3.1-flash-lite")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "dummy_token")
 SUPABASE_CONNECTION_STRING = os.environ.get("SUPABASE_CONNECTION_STRING", "")
+BL_DB_PATH = os.environ.get("BL_DB_PATH", os.path.join(os.path.expanduser("~"), ".openclaw-backlink", "data", "backlink.db"))
 
 def get_db_connection():
     if SUPABASE_CONNECTION_STRING:
@@ -37,5 +38,4 @@ def get_db_connection():
         return psycopg2.connect(SUPABASE_CONNECTION_STRING)
     else:
         import sqlite3
-        BL_DB_PATH = os.environ.get("BL_DB_PATH", os.path.join(os.path.expanduser("~"), ".openclaw-backlink", "data", "backlink.db"))
         return sqlite3.connect(BL_DB_PATH)

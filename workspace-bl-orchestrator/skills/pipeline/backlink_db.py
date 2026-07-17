@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import config
 from dataclasses import dataclass
 from typing import Any
@@ -46,7 +47,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   card_sent_at TEXT,
   run_dir TEXT,
   status TEXT DEFAULT 'pending',
-  created_at TEXT DEFAULT (timezone('utc', now()))
+  created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_tg_msg ON opportunities(telegram_group, telegram_message_id);
 CREATE INDEX IF NOT EXISTS idx_bl_run ON opportunities(run_id);
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS feedback_events (
   source TEXT NOT NULL,
   raw_payload TEXT,
   edited_content TEXT,
-  created_at TEXT DEFAULT (timezone('utc', now()))
+  created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_feedback ON feedback_events(opportunity_id, event_type);
 
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS content_versions (
   content_md TEXT NOT NULL,
   user_id TEXT,
   user_username TEXT,
-  created_at TEXT DEFAULT (timezone('utc', now()))
+  created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_versions ON content_versions(opportunity_id, version_type);
 
@@ -83,7 +84,7 @@ CREATE TABLE IF NOT EXISTS edit_sessions (
   state TEXT NOT NULL,
   prompt_message_id INTEGER,
   suggested_version_id INTEGER,
-  created_at TEXT DEFAULT (timezone('utc', now())),
+  created_at TEXT DEFAULT (datetime('now')),
   UNIQUE(opportunity_id, user_id)
 );
 """
@@ -259,7 +260,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               opportunity_freshness, posting_action, posting_steps,
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
               score_100, rank
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_id,
@@ -305,7 +306,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
 def set_status(opportunity_id: int, status: str, db_path: str = DEFAULT_DB_PATH) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute("UPDATE opportunities SET status=%s WHERE id=%s", (status, opportunity_id))
+        conn.execute("UPDATE opportunities SET status=? WHERE id=?", (status, opportunity_id))
         conn.commit()
 
 
@@ -315,7 +316,7 @@ def lookup_by_message_id(
     init_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM opportunities WHERE telegram_group=%s AND telegram_message_id=%s ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM opportunities WHERE telegram_group=? AND telegram_message_id=? ORDER BY id DESC LIMIT 1",
             (str(telegram_group), int(message_id)),
         ).fetchone()
     return _row_to_opportunity(row) if row else None
@@ -325,7 +326,7 @@ def lookup_by_run_id(run_id: str, db_path: str = DEFAULT_DB_PATH) -> Opportunity
     init_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM opportunities WHERE run_id=%s ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM opportunities WHERE run_id=? ORDER BY id DESC LIMIT 1",
             (run_id.strip(),),
         ).fetchone()
     return _row_to_opportunity(row) if row else None
@@ -337,7 +338,7 @@ def lookup_by_alert_id(alert_id: str, db_path: str = DEFAULT_DB_PATH) -> Opportu
     if not aid.startswith("bl-"):
         aid = f"bl-{aid}"
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT * FROM opportunities WHERE alert_id=%s", (aid,)).fetchone()
+        row = conn.execute("SELECT * FROM opportunities WHERE alert_id=?", (aid,)).fetchone()
     return _row_to_opportunity(row) if row else None
 
 
@@ -360,7 +361,7 @@ def record_feedback(
             """
             INSERT INTO feedback_events (
               opportunity_id, event_type, user_id, user_username, source, raw_payload, edited_content
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (opportunity_id, event_type, user_id, user_username, source, raw_payload, edited_content),
         )
@@ -385,7 +386,7 @@ def save_content_version(
             """
             INSERT INTO content_versions (
               opportunity_id, version_type, content_md, user_id, user_username
-            ) VALUES (%s, %s, %s, %s, %s)
+            ) VALUES (?, ?, ?, ?, ?)
             """,
             (opportunity_id, version_type, content_md, user_id, user_username),
         )
@@ -399,7 +400,7 @@ def get_latest_version(
     init_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM content_versions WHERE opportunity_id=%s AND version_type=%s ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM content_versions WHERE opportunity_id=? AND version_type=? ORDER BY id DESC LIMIT 1",
             (opportunity_id, version_type),
         ).fetchone()
     if not row:
@@ -429,7 +430,7 @@ def upsert_edit_session(
             """
             INSERT INTO edit_sessions (
               opportunity_id, user_id, state, prompt_message_id, suggested_version_id
-            ) VALUES (%s, %s, %s, %s, %s)
+            ) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(opportunity_id, user_id) DO UPDATE SET
               state = excluded.state,
               prompt_message_id = excluded.prompt_message_id,
@@ -446,7 +447,7 @@ def get_edit_session_by_prompt(
     init_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM edit_sessions WHERE prompt_message_id=%s ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM edit_sessions WHERE prompt_message_id=? ORDER BY id DESC LIMIT 1",
             (int(prompt_message_id),),
         ).fetchone()
         if not row:
@@ -460,7 +461,7 @@ def get_edit_session_by_prompt(
             suggested_version_id=row["suggested_version_id"],
         )
         opp_row = conn.execute(
-            "SELECT * FROM opportunities WHERE id=%s", (session.opportunity_id,)
+            "SELECT * FROM opportunities WHERE id=?", (session.opportunity_id,)
         ).fetchone()
     return (session, _row_to_opportunity(opp_row)) if opp_row else None
 
@@ -469,7 +470,7 @@ def clear_edit_session(opportunity_id: int, user_id: str, db_path: str = DEFAULT
     init_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "DELETE FROM edit_sessions WHERE opportunity_id=%s AND user_id=%s",
+            "DELETE FROM edit_sessions WHERE opportunity_id=? AND user_id=?",
             (opportunity_id, user_id),
         )
         conn.commit()
@@ -478,7 +479,7 @@ def clear_edit_session(opportunity_id: int, user_id: str, db_path: str = DEFAULT
 def clear_all_edit_sessions(opportunity_id: int, db_path: str = DEFAULT_DB_PATH) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute("DELETE FROM edit_sessions WHERE opportunity_id=%s", (opportunity_id,))
+        conn.execute("DELETE FROM edit_sessions WHERE opportunity_id=?", (opportunity_id,))
         conn.commit()
 
 
@@ -506,7 +507,7 @@ def get_pending_opportunities(
         rows = conn.execute(
             """
             SELECT * FROM opportunities
-            WHERE status = 'pending' AND project_url=%s
+            WHERE status = 'pending' AND project_url=?
             ORDER BY card_sent_at ASC
             LIMIT ?
             """,
@@ -526,8 +527,8 @@ def update_opportunity_delivery(
         conn.execute(
             """
             UPDATE opportunities
-            SET telegram_message_id=%s, card_sent_at = ?
-            WHERE id=%s
+            SET telegram_message_id=?, card_sent_at = ?
+            WHERE id=?
             """,
             (int(telegram_message_id), card_sent_at, opportunity_id),
         )
@@ -548,7 +549,7 @@ def get_stale_pending_opportunities(
                 """
                 SELECT * FROM opportunities
                 WHERE status = 'pending'
-                  AND project_url=%s
+                  AND project_url=?
                   AND card_sent_at IS NOT NULL
                   AND card_sent_at <= ?
                 ORDER BY card_sent_at ASC
@@ -580,7 +581,7 @@ def purge_editorial_data(
         if project_url:
             opp_ids = [
                 r["id"] for r in conn.execute(
-                    "SELECT id FROM opportunities WHERE project_url=%s", (project_url.strip(),)
+                    "SELECT id FROM opportunities WHERE project_url=?", (project_url.strip(),)
                 ).fetchall()
             ]
         else:
@@ -600,7 +601,7 @@ def purge_editorial_data(
             )
             counts["edit_sessions"] = cur.rowcount
         if project_url:
-            cur = conn.execute("DELETE FROM opportunities WHERE project_url=%s", (project_url.strip(),))
+            cur = conn.execute("DELETE FROM opportunities WHERE project_url=?", (project_url.strip(),))
         else:
             cur = conn.execute("DELETE FROM opportunities")
         counts["opportunities"] = cur.rowcount
