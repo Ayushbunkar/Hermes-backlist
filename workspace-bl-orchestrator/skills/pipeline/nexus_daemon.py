@@ -25,8 +25,9 @@ from score_opportunities import score_opportunity  # noqa: E402
 from quality_gate import gate_leads  # noqa: E402
 from harvest_draft import draft_and_send  # noqa: E402
 from resend_pending import resend_one_opportunity  # noqa: E402
+import config
 
-DB_PATH = os.environ.get("BL_DB_PATH", wdb.DEFAULT_DB_PATH)
+DB_PATH = os.environ.get("BL_DB_PATH", config.BL_DB_PATH)
 AIR_GAP_SECONDS = int(os.environ.get("BL_AIR_GAP_SECONDS", "30"))
 SITES_PER_TICK = int(os.environ.get("BL_SITES_PER_TICK", "5"))
 SCAN_MAX_PER_SITE = int(os.environ.get("BL_SCAN_MAX_PER_SITE", "20"))

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import fcntl
 import hashlib
 import json
 import os
@@ -82,7 +81,6 @@ def _throttle() -> None:
         try:
             os.makedirs(os.path.dirname(_THROTTLE_FILE), exist_ok=True)
             with open(_THROTTLE_FILE, "a+", encoding="utf-8") as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.seek(0)
                 raw = f.read().strip()
                 last = float(raw or "0")
@@ -98,7 +96,6 @@ def _mark_request_time() -> None:
         try:
             os.makedirs(os.path.dirname(_THROTTLE_FILE), exist_ok=True)
             with open(_THROTTLE_FILE, "w", encoding="utf-8") as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
                 f.write(str(time.time()))
         except OSError:
             pass

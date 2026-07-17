@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 import os
-import sqlite3
+import config
 import sys
 from dataclasses import dataclass
 from typing import Any
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS projects (
   telegram_group_id   TEXT,                       -- per-project Telegram supergroup
   telegram_group_name TEXT,
   card_prefix         TEXT,                       -- optional card label prefix
-  created_at  TEXT    DEFAULT (datetime('now'))
+  created_at  TEXT    DEFAULT (timezone('utc', now()))
 );
 
 CREATE TABLE IF NOT EXISTS whitelist_sites (
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS whitelist_sites (
   project_id            INTEGER NOT NULL REFERENCES projects(id),
   domain                TEXT    NOT NULL,
   status                TEXT    NOT NULL DEFAULT 'active',  -- active | benched | evicted | cooldown
-  added_at              TEXT    DEFAULT (datetime('now')),
+  added_at              TEXT    DEFAULT (timezone('utc', now())),
   added_by              TEXT    NOT NULL DEFAULT 'manual',  -- seed | finder | manual
   last_scanned_at       TEXT,
   current_usability_score REAL  DEFAULT NULL,
@@ -90,8 +90,8 @@ CREATE TABLE IF NOT EXISTS harvest_leads (
   status               TEXT NOT NULL DEFAULT 'NEW',  -- NEW | SCORED | GATED | REJECTED | DRAFTED | SENT | FAILED
   run_id               TEXT,
   raw_json             TEXT,
-  created_at           TEXT DEFAULT (datetime('now')),
-  updated_at           TEXT DEFAULT (datetime('now')),
+  created_at           TEXT DEFAULT (timezone('utc', now())),
+  updated_at           TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, url_key)
 );
 CREATE INDEX IF NOT EXISTS idx_lead_status ON harvest_leads(status, score_100);
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS site_score_history (
   approvals            INTEGER NOT NULL DEFAULT 0,
   rejects              INTEGER NOT NULL DEFAULT 0,
   opportunities_emitted INTEGER NOT NULL DEFAULT 0,
-  recorded_at          TEXT    DEFAULT (datetime('now'))
+  recorded_at          TEXT    DEFAULT (timezone('utc', now()))
 );
 CREATE INDEX IF NOT EXISTS idx_ssh_site ON site_score_history(whitelist_site_id, recorded_at);
 
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS seen_opportunities (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   project_id   INTEGER NOT NULL REFERENCES projects(id),
   url_key      TEXT    NOT NULL,
-  first_seen_at TEXT   DEFAULT (datetime('now')),
+  first_seen_at TEXT   DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, url_key)
 );
 CREATE INDEX IF NOT EXISTS idx_seen_project ON seen_opportunities(project_id);
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   run_id       TEXT    NOT NULL UNIQUE,
   project_id   INTEGER REFERENCES projects(id),
-  started_at   TEXT    DEFAULT (datetime('now')),
+  started_at   TEXT    DEFAULT (timezone('utc', now())),
   finished_at  TEXT,
   status       TEXT    DEFAULT 'running',  -- running | success | failed
   summary_json TEXT
@@ -131,7 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_pr_project ON pipeline_runs(project_id, started_a
 CREATE TABLE IF NOT EXISTS harvest_cursors (
   whitelist_site_id INTEGER PRIMARY KEY REFERENCES whitelist_sites(id),
   state_json        TEXT NOT NULL DEFAULT '{}',
-  updated_at        TEXT DEFAULT (datetime('now'))
+  updated_at        TEXT DEFAULT (timezone('utc', now()))
 );
 
 CREATE TABLE IF NOT EXISTS query_stats (
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS vocab_terms (
   term        TEXT NOT NULL,
   score       REAL NOT NULL DEFAULT 0,
   source      TEXT,
-  added_at    TEXT DEFAULT (datetime('now')),
+  added_at    TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, term)
 );
 CREATE INDEX IF NOT EXISTS idx_vocab_project ON vocab_terms(project_id, score DESC);
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS domain_candidates (
   domain       TEXT NOT NULL,
   source_url   TEXT,
   status       TEXT NOT NULL DEFAULT 'pending',
-  created_at   TEXT DEFAULT (datetime('now')),
+  created_at   TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, domain)
 );
 
@@ -174,8 +174,8 @@ CREATE TABLE IF NOT EXISTS onboard_sessions (
   step TEXT NOT NULL,
   answers_json TEXT NOT NULL DEFAULT '{}',
   prompt_message_id INTEGER,
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now')),
+  created_at TEXT DEFAULT (timezone('utc', now())),
+  updated_at TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(chat_id, user_id)
 );
 """
@@ -212,7 +212,7 @@ _COLUMN_MIGRATIONS: dict[str, dict[str, str]] = {
 
 def _connect(db_path: str) -> sqlite3.Connection:
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    conn = config.get_db_connection()
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
@@ -256,11 +256,11 @@ def upsert_project(project_url: str, niche: str, name: str = "", db_path: str = 
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT OR IGNORE INTO projects (project_url, niche, name) VALUES (?, ?, ?)",
+            "INSERT OR IGNORE INTO projects (project_url, niche, name) VALUES (%s, %s, %s)",
             (project_url.strip(), niche.strip(), name.strip()),
         )
         conn.commit()
-        row = conn.execute("SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
     return int(row["id"])
 
 
@@ -268,7 +268,7 @@ def get_project_id(project_url: str, db_path: str = DEFAULT_DB_PATH) -> int | No
     """Return project_id or None if not registered yet."""
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
     return int(row["id"]) if row else None
 
 
@@ -290,14 +290,14 @@ def upsert_whitelist_site(
         conn.execute(
             """
             INSERT INTO whitelist_sites (project_id, domain, added_by, status, next_scan_due)
-            VALUES (?, ?, ?, 'active', datetime('now'))
+            VALUES (%s, %s, %s, 'active', timezone('utc', now()))
             ON CONFLICT(project_id, domain) DO NOTHING
             """,
             (project_id, domain, added_by),
         )
         conn.commit()
         row = conn.execute(
-            "SELECT id FROM whitelist_sites WHERE project_id = ? AND domain = ?",
+            "SELECT id FROM whitelist_sites WHERE project_id=%s AND domain=%s",
             (project_id, domain),
         ).fetchone()
     return int(row["id"])
@@ -308,7 +308,7 @@ def get_active_whitelist(project_id: int, db_path: str = DEFAULT_DB_PATH) -> lis
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         rows = conn.execute(
-            "SELECT * FROM whitelist_sites WHERE project_id = ? AND status = 'active' ORDER BY added_at",
+            "SELECT * FROM whitelist_sites WHERE project_id=%s AND status = 'active' ORDER BY added_at",
             (project_id,),
         ).fetchall()
     return [dict(r) for r in rows]
@@ -318,7 +318,7 @@ def count_active_sites(project_id: int, db_path: str = DEFAULT_DB_PATH) -> int:
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT COUNT(*) as n FROM whitelist_sites WHERE project_id = ? AND status = 'active'",
+            "SELECT COUNT(*) as n FROM whitelist_sites WHERE project_id=%s AND status = 'active'",
             (project_id,),
         ).fetchone()
     return int(row["n"])
@@ -329,7 +329,7 @@ def set_site_status(whitelist_site_id: int, status: str, db_path: str = DEFAULT_
     assert status in ("active", "benched", "evicted"), f"Invalid status: {status}"
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute("UPDATE whitelist_sites SET status = ? WHERE id = ?", (status, whitelist_site_id))
+        conn.execute("UPDATE whitelist_sites SET status=%s WHERE id=%s", (status, whitelist_site_id))
         conn.commit()
 
 
@@ -337,7 +337,7 @@ def update_site_usability_score(whitelist_site_id: int, score: float, db_path: s
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "UPDATE whitelist_sites SET current_usability_score = ? WHERE id = ?",
+            "UPDATE whitelist_sites SET current_usability_score=%s WHERE id=%s",
             (score, whitelist_site_id),
         )
         conn.commit()
@@ -347,7 +347,7 @@ def touch_last_scanned(whitelist_site_id: int, db_path: str = DEFAULT_DB_PATH) -
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "UPDATE whitelist_sites SET last_scanned_at = datetime('now') WHERE id = ?",
+            "UPDATE whitelist_sites SET last_scanned_at = timezone('utc', now()) WHERE id=%s",
             (whitelist_site_id,),
         )
         conn.commit()
@@ -371,7 +371,7 @@ def append_score_history(
             """
             INSERT INTO site_score_history
               (whitelist_site_id, score_0_100, approvals, rejects, opportunities_emitted)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (whitelist_site_id, score_0_100, approvals, rejects, opportunities_emitted),
         )
@@ -390,7 +390,7 @@ def get_recent_scores(
         rows = conn.execute(
             """
             SELECT * FROM site_score_history
-            WHERE whitelist_site_id = ?
+            WHERE whitelist_site_id=%s
               AND recorded_at >= datetime('now', ? || ' days')
             ORDER BY recorded_at DESC
             LIMIT ?
@@ -408,7 +408,7 @@ def is_seen(project_id: int, url_key: str, db_path: str = DEFAULT_DB_PATH) -> bo
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT 1 FROM seen_opportunities WHERE project_id = ? AND url_key = ?",
+            "SELECT 1 FROM seen_opportunities WHERE project_id=%s AND url_key=%s",
             (project_id, url_key),
         ).fetchone()
     return row is not None
@@ -419,7 +419,7 @@ def mark_seen_batch(project_id: int, url_keys: list[str], db_path: str = DEFAULT
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.executemany(
-            "INSERT OR IGNORE INTO seen_opportunities (project_id, url_key) VALUES (?, ?)",
+            "INSERT OR IGNORE INTO seen_opportunities (project_id, url_key) VALUES (%s, %s)",
             [(project_id, k) for k in url_keys],
         )
         conn.commit()
@@ -433,10 +433,10 @@ def mark_seen_editorial(project_id: int, url_key: str, db_path: str = DEFAULT_DB
         conn.execute(
             """
             INSERT INTO seen_opportunities (project_id, url_key, editorial_locked, last_activity_at)
-            VALUES (?, ?, 1, datetime('now'))
+            VALUES (%s, %s, 1, timezone('utc', now()))
             ON CONFLICT(project_id, url_key) DO UPDATE SET
               editorial_locked = 1,
-              last_activity_at = datetime('now')
+              last_activity_at = timezone('utc', now())
             """,
             (project_id, key),
         )
@@ -451,7 +451,7 @@ def register_run(run_id: str, project_id: int | None = None, db_path: str = DEFA
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT OR IGNORE INTO pipeline_runs (run_id, project_id, status) VALUES (?, ?, 'running')",
+            "INSERT OR IGNORE INTO pipeline_runs (run_id, project_id, status) VALUES (%s, %s, 'running')",
             (run_id, project_id),
         )
         conn.commit()
@@ -467,7 +467,7 @@ def finish_run(
     summary_json = json.dumps(summary, ensure_ascii=False) if summary else None
     with _connect(db_path) as conn:
         conn.execute(
-            "UPDATE pipeline_runs SET status = ?, finished_at = datetime('now'), summary_json = ? WHERE run_id = ?",
+            "UPDATE pipeline_runs SET status=%s, finished_at = timezone('utc', now()), summary_json = ? WHERE run_id=%s",
             (status, summary_json, run_id),
         )
         conn.commit()
@@ -516,7 +516,7 @@ def add_or_update_project(
             sets.append("card_prefix = ?")
             params.append(str(card_prefix).strip() or None)
         params.append(pid)
-        conn.execute(f"UPDATE projects SET {', '.join(sets)} WHERE id = ?", params)
+        conn.execute(f"UPDATE projects SET {', '.join(sets)} WHERE id=%s", params)
         conn.commit()
     return pid
 
@@ -526,7 +526,7 @@ def update_project_config(project_url: str, patch: dict, db_path: str = DEFAULT_
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT id, config_json FROM projects WHERE project_url = ?", (project_url.strip(),)
+            "SELECT id, config_json FROM projects WHERE project_url=%s", (project_url.strip(),)
         ).fetchone()
         if not row:
             raise ValueError(f"project not found: {project_url}")
@@ -538,7 +538,7 @@ def update_project_config(project_url: str, patch: dict, db_path: str = DEFAULT_
                 current = {}
         current.update(patch or {})
         conn.execute(
-            "UPDATE projects SET config_json = ? WHERE id = ?",
+            "UPDATE projects SET config_json=%s WHERE id=%s",
             (json.dumps(current, ensure_ascii=False), row["id"]),
         )
         conn.commit()
@@ -565,12 +565,12 @@ def set_project_group(
         raise ValueError("group_id is required")
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)
+            "SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)
         ).fetchone()
         if not row:
             raise ValueError(f"project not found: {project_url}")
         dup = conn.execute(
-            "SELECT project_url FROM projects WHERE telegram_group_id = ? AND project_url != ?",
+            "SELECT project_url FROM projects WHERE telegram_group_id=%s AND project_url != ?",
             (gid, project_url.strip()),
         ).fetchone()
         if dup:
@@ -583,7 +583,7 @@ def set_project_group(
             sets.append("card_prefix = ?")
             params.append(str(card_prefix).strip() or None)
         params.append(project_url.strip())
-        conn.execute(f"UPDATE projects SET {', '.join(sets)} WHERE project_url = ?", params)
+        conn.execute(f"UPDATE projects SET {', '.join(sets)} WHERE project_url=%s", params)
         conn.commit()
 
 
@@ -623,7 +623,7 @@ def set_project_status(project_url: str, status: str, db_path: str = DEFAULT_DB_
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         cur = conn.execute(
-            "UPDATE projects SET status = ? WHERE project_url = ?", (status, project_url.strip())
+            "UPDATE projects SET status=%s WHERE project_url=%s", (status, project_url.strip())
         )
         conn.commit()
         if cur.rowcount == 0:
@@ -633,7 +633,7 @@ def set_project_status(project_url: str, status: str, db_path: str = DEFAULT_DB_
 def get_project(project_url: str, db_path: str = DEFAULT_DB_PATH) -> dict | None:
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT * FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT * FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
     return dict(row) if row else None
 
 
@@ -655,19 +655,19 @@ def delete_project(project_url: str, db_path: str = DEFAULT_DB_PATH) -> None:
     """Remove a project and all of its sites/leads. Irreversible."""
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
         if not row:
             raise ValueError(f"project not found: {project_url}")
         pid = row["id"]
-        conn.execute("DELETE FROM harvest_leads WHERE project_id = ?", (pid,))
-        conn.execute("DELETE FROM seen_opportunities WHERE project_id = ?", (pid,))
+        conn.execute("DELETE FROM harvest_leads WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM seen_opportunities WHERE project_id=%s", (pid,))
         conn.execute(
             "DELETE FROM site_score_history WHERE whitelist_site_id IN "
-            "(SELECT id FROM whitelist_sites WHERE project_id = ?)",
+            "(SELECT id FROM whitelist_sites WHERE project_id=%s)",
             (pid,),
         )
-        conn.execute("DELETE FROM whitelist_sites WHERE project_id = ?", (pid,))
-        conn.execute("DELETE FROM projects WHERE id = ?", (pid,))
+        conn.execute("DELETE FROM whitelist_sites WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM projects WHERE id=%s", (pid,))
         conn.commit()
 
 
@@ -692,8 +692,8 @@ def get_due_sites(limit: int = 1, db_path: str = DEFAULT_DB_PATH) -> list[dict]:
             JOIN projects p ON p.id = w.project_id
             WHERE p.status = 'active'
               AND w.status IN ('active', 'cooldown')
-              AND (w.next_scan_due IS NULL OR w.next_scan_due <= datetime('now'))
-              AND (w.cooldown_until IS NULL OR w.cooldown_until <= datetime('now'))
+              AND (w.next_scan_due IS NULL OR w.next_scan_due <= timezone('utc', now()))
+              AND (w.cooldown_until IS NULL OR w.cooldown_until <= timezone('utc', now()))
             ORDER BY COALESCE(w.scan_priority, 50) DESC,
                      (w.next_scan_due IS NULL) DESC, w.next_scan_due ASC
             LIMIT ?
@@ -723,12 +723,12 @@ def mark_site_scanned_success(
         conn.execute(
             """
             UPDATE whitelist_sites
-            SET last_scanned_at = datetime('now'),
+            SET last_scanned_at = timezone('utc', now()),
                 next_scan_due   = datetime('now', ? || ' minutes'),
                 failure_count   = 0,
                 cooldown_until  = NULL,
                 status          = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
-            WHERE id = ?
+            WHERE id=%s
             """,
             (f"+{int(interval_minutes)}", whitelist_site_id),
         )
@@ -744,7 +744,7 @@ def mark_site_blocked(
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT failure_count FROM whitelist_sites WHERE id = ?", (whitelist_site_id,)
+            "SELECT failure_count FROM whitelist_sites WHERE id=%s", (whitelist_site_id,)
         ).fetchone()
         failures = (int(row["failure_count"]) if row and row["failure_count"] is not None else 0) + 1
         backoff = min(base_backoff_hours * (2 ** (failures - 1)), max_backoff_hours)
@@ -752,12 +752,12 @@ def mark_site_blocked(
         conn.execute(
             """
             UPDATE whitelist_sites
-            SET failure_count  = ?,
-                last_scanned_at = datetime('now'),
+            SET failure_count=%s,
+                last_scanned_at = timezone('utc', now()),
                 cooldown_until = datetime('now', ? || ' minutes'),
                 next_scan_due  = datetime('now', ? || ' minutes'),
                 status         = 'cooldown'
-            WHERE id = ?
+            WHERE id=%s
             """,
             (failures, f"+{minutes}", f"+{minutes}", whitelist_site_id),
         )
@@ -772,9 +772,9 @@ def set_project_sites_due_now(project_id: int, db_path: str = DEFAULT_DB_PATH) -
         cur = conn.execute(
             """
             UPDATE whitelist_sites
-            SET next_scan_due = datetime('now'), cooldown_until = NULL,
+            SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                 status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
-            WHERE project_id = ? AND status IN ('active', 'cooldown')
+            WHERE project_id=%s AND status IN ('active', 'cooldown')
             """,
             (project_id,),
         )
@@ -806,7 +806,7 @@ def insert_leads(
                       target_title, target_excerpt, opportunity_context, opportunity_freshness,
                       posting_action, platform, platform_weight, credibility_tier,
                       relevance_score, recency_score, status, raw_json
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'NEW', ?)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'NEW', %s)
                     ON CONFLICT(project_id, url_key) DO NOTHING
                     """,
                     (
@@ -825,9 +825,9 @@ def insert_leads(
                     conn.execute(
                         """
                         INSERT INTO seen_opportunities (project_id, url_key, last_activity_at)
-                        VALUES (?, ?, datetime('now'))
+                        VALUES (%s, %s, timezone('utc', now()))
                         ON CONFLICT(project_id, url_key) DO UPDATE SET
-                          last_activity_at = datetime('now')
+                          last_activity_at = timezone('utc', now())
                         """,
                         (project_id, key),
                     )
@@ -844,13 +844,13 @@ def get_leads_by_status(
     with _connect(db_path) as conn:
         if project_id is not None:
             rows = conn.execute(
-                "SELECT * FROM harvest_leads WHERE status = ? AND project_id = ? "
+                "SELECT * FROM harvest_leads WHERE status=%s AND project_id=%s "
                 "ORDER BY score_100 DESC, created_at ASC LIMIT ?",
                 (status, project_id, limit),
             ).fetchall()
         else:
             rows = conn.execute(
-                "SELECT * FROM harvest_leads WHERE status = ? "
+                "SELECT * FROM harvest_leads WHERE status=%s "
                 "ORDER BY score_100 DESC, created_at ASC LIMIT ?",
                 (status, limit),
             ).fetchall()
@@ -866,7 +866,7 @@ def update_lead(lead_id: int, fields: dict, db_path: str = DEFAULT_DB_PATH) -> N
     params = list(fields.values())
     with _connect(db_path) as conn:
         conn.execute(
-            f"UPDATE harvest_leads SET {cols}, updated_at = datetime('now') WHERE id = ?",
+            f"UPDATE harvest_leads SET {cols}, updated_at = timezone('utc', now()) WHERE id=%s",
             (*params, lead_id),
         )
         conn.commit()
@@ -882,8 +882,8 @@ def reset_failed_leads(
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         cur = conn.execute(
-            "UPDATE harvest_leads SET status = ?, draft_attempts = 0, run_id = NULL, "
-            "updated_at = datetime('now') WHERE project_id = ? AND status = 'FAILED'",
+            "UPDATE harvest_leads SET status=%s, draft_attempts = 0, run_id = NULL, "
+            "updated_at = timezone('utc', now()) WHERE project_id=%s AND status = 'FAILED'",
             (to_status, project_id),
         )
         conn.commit()
@@ -900,7 +900,7 @@ def recover_stuck_drafted(
     with _connect(db_path) as conn:
         cur = conn.execute(
             "UPDATE harvest_leads SET status = 'GATED', run_id = NULL, "
-            "updated_at = datetime('now') "
+            "updated_at = timezone('utc', now()) "
             "WHERE status = 'DRAFTED' "
             "AND updated_at < datetime('now', ?)",
             (f"-{int(minutes)} minutes",),
@@ -914,7 +914,7 @@ def count_leads_by_status(project_id: int | None = None, db_path: str = DEFAULT_
     with _connect(db_path) as conn:
         if project_id is not None:
             rows = conn.execute(
-                "SELECT status, COUNT(*) AS n FROM harvest_leads WHERE project_id = ? GROUP BY status",
+                "SELECT status, COUNT(*) AS n FROM harvest_leads WHERE project_id=%s GROUP BY status",
                 (project_id,),
             ).fetchall()
         else:
@@ -929,7 +929,7 @@ def get_lead_by_url(project_id: int, url: str, db_path: str = DEFAULT_DB_PATH) -
     key = str(url or "").lower().rstrip("/")
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM harvest_leads WHERE project_id = ? AND (url_key = ? OR url = ?) ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM harvest_leads WHERE project_id=%s AND (url_key = ? OR url = ?) ORDER BY id DESC LIMIT 1",
             (project_id, key, url),
         ).fetchone()
     return dict(row) if row else None
@@ -939,7 +939,7 @@ def mark_seen_for_project_url(project_url: str, url: str, db_path: str = DEFAULT
     """Permanently mark a URL seen after editorial approve/reject."""
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
         if not row:
             return
         pid = int(row["id"])
@@ -955,9 +955,9 @@ def purge_harvest_pipeline(
     counts = {"harvest_leads": 0, "seen_opportunities": 0}
     with _connect(db_path) as conn:
         if project_id is not None:
-            cur = conn.execute("DELETE FROM harvest_leads WHERE project_id = ?", (project_id,))
+            cur = conn.execute("DELETE FROM harvest_leads WHERE project_id=%s", (project_id,))
             counts["harvest_leads"] = cur.rowcount
-            cur = conn.execute("DELETE FROM seen_opportunities WHERE project_id = ?", (project_id,))
+            cur = conn.execute("DELETE FROM seen_opportunities WHERE project_id=%s", (project_id,))
             counts["seen_opportunities"] = cur.rowcount
         else:
             cur = conn.execute("DELETE FROM harvest_leads")
@@ -976,10 +976,10 @@ def reset_all_cooldowns(project_id: int | None = None, db_path: str = DEFAULT_DB
             cur = conn.execute(
                 """
                 UPDATE whitelist_sites
-                SET next_scan_due = datetime('now'), cooldown_until = NULL,
+                SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                     failure_count = 0,
                     status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
-                WHERE project_id = ? AND status IN ('active', 'cooldown')
+                WHERE project_id=%s AND status IN ('active', 'cooldown')
                 """,
                 (project_id,),
             )
@@ -987,7 +987,7 @@ def reset_all_cooldowns(project_id: int | None = None, db_path: str = DEFAULT_DB
             cur = conn.execute(
                 """
                 UPDATE whitelist_sites
-                SET next_scan_due = datetime('now'), cooldown_until = NULL,
+                SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                     failure_count = 0,
                     status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
                 WHERE status IN ('active', 'cooldown')
@@ -1000,7 +1000,7 @@ def reset_all_cooldowns(project_id: int | None = None, db_path: str = DEFAULT_DB
 def get_project_id_by_url(project_url: str, db_path: str = DEFAULT_DB_PATH) -> int | None:
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT id FROM projects WHERE project_url = ?", (project_url.strip(),)).fetchone()
+        row = conn.execute("SELECT id FROM projects WHERE project_url=%s", (project_url.strip(),)).fetchone()
     return int(row["id"]) if row else None
 
 
@@ -1013,7 +1013,7 @@ def set_site_scan_priority(
     priority = max(0, min(100, int(priority)))
     with _connect(db_path) as conn:
         cur = conn.execute(
-            "UPDATE whitelist_sites SET scan_priority = ? WHERE project_id = ? AND domain = ?",
+            "UPDATE whitelist_sites SET scan_priority=%s WHERE project_id=%s AND domain=%s",
             (priority, project_id, domain),
         )
         conn.commit()
@@ -1025,7 +1025,7 @@ def get_whitelist_site(project_id: int, domain: str, db_path: str = DEFAULT_DB_P
     domain = domain.lower().strip().lstrip("www.")
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM whitelist_sites WHERE project_id = ? AND domain = ?",
+            "SELECT * FROM whitelist_sites WHERE project_id=%s AND domain=%s",
             (project_id, domain),
         ).fetchone()
     return dict(row) if row else None
@@ -1060,7 +1060,7 @@ def refresh_scan_priorities(project_id: int, db_path: str = DEFAULT_DB_PATH) -> 
     with _connect(db_path) as conn:
         sites = conn.execute(
             "SELECT id, domain, current_usability_score, scan_priority FROM whitelist_sites "
-            "WHERE project_id = ? AND status IN ('active', 'cooldown')",
+            "WHERE project_id=%s AND status IN ('active', 'cooldown')",
             (project_id,),
         ).fetchall()
         for site in sites:
@@ -1069,7 +1069,7 @@ def refresh_scan_priorities(project_id: int, db_path: str = DEFAULT_DB_PATH) -> 
             row = conn.execute(
                 """
                 SELECT COUNT(*) AS n FROM harvest_leads
-                WHERE whitelist_site_id = ? AND created_at >= datetime('now', '-7 days')
+                WHERE whitelist_site_id=%s AND created_at >= datetime('now', '-7 days')
                 """,
                 (wl_id,),
             ).fetchone()
@@ -1082,7 +1082,7 @@ def refresh_scan_priorities(project_id: int, db_path: str = DEFAULT_DB_PATH) -> 
             else:
                 new_prio = int(max(10, min(100, usability * 0.5 + yield_boost + 20)))
             conn.execute(
-                "UPDATE whitelist_sites SET scan_priority = ? WHERE id = ?",
+                "UPDATE whitelist_sites SET scan_priority=%s WHERE id=%s",
                 (new_prio, wl_id),
             )
             updated += 1
@@ -1096,7 +1096,7 @@ def count_recent_leads(project_id: int, hours: int = 24, db_path: str = DEFAULT_
         row = conn.execute(
             """
             SELECT COUNT(*) AS n FROM harvest_leads
-            WHERE project_id = ? AND created_at >= datetime('now', ? || ' hours')
+            WHERE project_id=%s AND created_at >= datetime('now', ? || ' hours')
             """,
             (project_id, f"-{hours}"),
         ).fetchone()
@@ -1111,7 +1111,7 @@ def get_harvest_cursor(whitelist_site_id: int, db_path: str = DEFAULT_DB_PATH) -
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT state_json FROM harvest_cursors WHERE whitelist_site_id = ?",
+            "SELECT state_json FROM harvest_cursors WHERE whitelist_site_id=%s",
             (whitelist_site_id,),
         ).fetchone()
     if not row or not row["state_json"]:
@@ -1128,10 +1128,10 @@ def set_harvest_cursor(whitelist_site_id: int, state: dict, db_path: str = DEFAU
         conn.execute(
             """
             INSERT INTO harvest_cursors (whitelist_site_id, state_json, updated_at)
-            VALUES (?, ?, datetime('now'))
+            VALUES (%s, %s, timezone('utc', now()))
             ON CONFLICT(whitelist_site_id) DO UPDATE SET
               state_json = excluded.state_json,
-              updated_at = datetime('now')
+              updated_at = timezone('utc', now())
             """,
             (whitelist_site_id, json.dumps(state, ensure_ascii=False)),
         )
@@ -1154,11 +1154,11 @@ def record_query_stats(
             conn.execute(
                 """
                 INSERT INTO query_stats (project_id, domain, template_id, runs, new_leads, last_used)
-                VALUES (?, ?, ?, 1, ?, datetime('now'))
+                VALUES (%s, %s, %s, 1, %s, timezone('utc', now()))
                 ON CONFLICT(project_id, domain, template_id) DO UPDATE SET
                   runs = runs + 1,
                   new_leads = new_leads + excluded.new_leads,
-                  last_used = datetime('now')
+                  last_used = timezone('utc', now())
                 """,
                 (project_id, dom, tid, int(new_count)),
             )
@@ -1170,7 +1170,7 @@ def get_query_stats(project_id: int, domain: str, db_path: str = DEFAULT_DB_PATH
     dom = domain.lower().strip().lstrip("www.")
     with _connect(db_path) as conn:
         rows = conn.execute(
-            "SELECT template_id, runs, new_leads FROM query_stats WHERE project_id = ? AND domain = ?",
+            "SELECT template_id, runs, new_leads FROM query_stats WHERE project_id=%s AND domain=%s",
             (project_id, dom),
         ).fetchall()
     return {r["template_id"]: {"runs": int(r["runs"]), "new_leads": int(r["new_leads"])} for r in rows}
@@ -1180,7 +1180,7 @@ def get_vocab_terms(project_id: int, limit: int = 30, db_path: str = DEFAULT_DB_
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         rows = conn.execute(
-            "SELECT term FROM vocab_terms WHERE project_id = ? ORDER BY score DESC LIMIT ?",
+            "SELECT term FROM vocab_terms WHERE project_id=%s ORDER BY score DESC LIMIT ?",
             (project_id, limit),
         ).fetchall()
     return [r["term"] for r in rows]
@@ -1202,7 +1202,7 @@ def upsert_vocab_terms(
             conn.execute(
                 """
                 INSERT INTO vocab_terms (project_id, term, score, source)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
                 ON CONFLICT(project_id, term) DO UPDATE SET
                   score = MAX(vocab_terms.score, excluded.score),
                   source = excluded.source
@@ -1222,7 +1222,7 @@ def revive_lead(project_id: int, url_key: str, db_path: str = DEFAULT_DB_PATH) -
         seen = conn.execute(
             """
             SELECT editorial_locked FROM seen_opportunities
-            WHERE project_id = ? AND url_key = ?
+            WHERE project_id=%s AND url_key=%s
             """,
             (project_id, key),
         ).fetchone()
@@ -1231,8 +1231,8 @@ def revive_lead(project_id: int, url_key: str, db_path: str = DEFAULT_DB_PATH) -
         cur = conn.execute(
             """
             UPDATE harvest_leads SET status = 'NEW', run_id = NULL, draft_attempts = 0,
-              updated_at = datetime('now')
-            WHERE project_id = ? AND url_key = ? AND status IN ('SENT', 'REJECTED', 'GATED', 'SCORED', 'FAILED')
+              updated_at = timezone('utc', now())
+            WHERE project_id=%s AND url_key=%s AND status IN ('SENT', 'REJECTED', 'GATED', 'SCORED', 'FAILED')
             """,
             (project_id, key),
         )
@@ -1279,7 +1279,7 @@ def queue_domain_candidate(
         cur = conn.execute(
             """
             INSERT OR IGNORE INTO domain_candidates (project_id, domain, source_url)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
             """,
             (project_id, dom, source_url),
         )
@@ -1295,7 +1295,7 @@ def promote_domain_candidates(project_id: int, limit: int = 3, db_path: str = DE
         rows = conn.execute(
             """
             SELECT id, domain FROM domain_candidates
-            WHERE project_id = ? AND status = 'pending'
+            WHERE project_id=%s AND status = 'pending'
             ORDER BY created_at ASC LIMIT ?
             """,
             (project_id, limit),
@@ -1304,7 +1304,7 @@ def promote_domain_candidates(project_id: int, limit: int = 3, db_path: str = DE
         upsert_whitelist_site(project_id, row["domain"], added_by="graph", db_path=db_path)
         with _connect(db_path) as conn:
             conn.execute(
-                "UPDATE domain_candidates SET status = 'promoted' WHERE id = ?",
+                "UPDATE domain_candidates SET status = 'promoted' WHERE id=%s",
                 (row["id"],),
             )
             conn.commit()
@@ -1317,7 +1317,7 @@ def get_existing_url_keys(project_id: int, db_path: str = DEFAULT_DB_PATH) -> se
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         rows = conn.execute(
-            "SELECT url_key FROM harvest_leads WHERE project_id = ?",
+            "SELECT url_key FROM harvest_leads WHERE project_id=%s",
             (project_id,),
         ).fetchall()
     return {str(r["url_key"]).lower() for r in rows}
@@ -1344,7 +1344,7 @@ def get_onboard_session(
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM onboard_sessions WHERE chat_id = ? AND user_id = ?",
+            "SELECT * FROM onboard_sessions WHERE chat_id=%s AND user_id=%s",
             (str(chat_id), str(user_id)),
         ).fetchone()
     return _row_to_onboard_session(row) if row else None
@@ -1356,7 +1356,7 @@ def get_any_onboard_session_for_chat(
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         row = conn.execute(
-            "SELECT * FROM onboard_sessions WHERE chat_id = ? ORDER BY id DESC LIMIT 1",
+            "SELECT * FROM onboard_sessions WHERE chat_id=%s ORDER BY id DESC LIMIT 1",
             (str(chat_id),),
         ).fetchone()
     return _row_to_onboard_session(row) if row else None
@@ -1376,12 +1376,12 @@ def upsert_onboard_session(
         conn.execute(
             """
             INSERT INTO onboard_sessions (chat_id, user_id, step, answers_json, prompt_message_id, updated_at)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
+            VALUES (%s, %s, %s, %s, %s, timezone('utc', now()))
             ON CONFLICT(chat_id, user_id) DO UPDATE SET
               step = excluded.step,
               answers_json = excluded.answers_json,
               prompt_message_id = excluded.prompt_message_id,
-              updated_at = datetime('now')
+              updated_at = timezone('utc', now())
             """,
             (str(chat_id), str(user_id), step, answers_json, prompt_message_id),
         )
@@ -1392,7 +1392,7 @@ def clear_onboard_session(chat_id: str, user_id: str, *, db_path: str = DEFAULT_
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "DELETE FROM onboard_sessions WHERE chat_id = ? AND user_id = ?",
+            "DELETE FROM onboard_sessions WHERE chat_id=%s AND user_id=%s",
             (str(chat_id), str(user_id)),
         )
         conn.commit()
