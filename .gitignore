@@ -111,3 +111,6 @@ Thumbs.db
 # Ignore editor temporary files
 *.kate-swp
 *.kate-swn
+
+bin/chromium
+docker/backlink-agent-deploy/openclaw-backlink-agent-image.tar.gz
