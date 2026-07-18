@@ -35,6 +35,13 @@ class PostgresSQLiteAdapter:
         self.row_factory = None
 
     def _translate_sql(self, sql):
+        import re
+        if sql.startswith("PRAGMA table_info("):
+            match = re.search(r"PRAGMA table_info\((.+?)\)", sql)
+            if match:
+                table_name = match.group(1).strip("'\"")
+                return f"SELECT column_name AS name FROM information_schema.columns WHERE table_name = '{table_name}'"
+
         sql = sql.replace("datetime('now')", "timezone('utc', now())")
         sql = sql.replace("INSERT OR REPLACE", "INSERT INTO")
         sql = sql.replace('?', '%s')
