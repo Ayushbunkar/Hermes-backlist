@@ -179,18 +179,51 @@ def format_draft_plain(text: str) -> str:
     return text.strip()
 
 
-def _card_score_display(card: dict) -> tuple[str, str]:
+def _card_score_display(card: dict) -> tuple[str, str, str, str]:
     score_100 = card.get("score_100")
     score = score_100 if score_100 is not None else card.get("audit_score")
     rank = card.get("rank")
     score_display = ""
     if score is not None:
         if score_100 is not None:
-            score_display = f" | Score: {score_100}/100"
+            score_display = f"{score_100}/100"
         else:
-            score_display = f" | Score: {score}/10"
+            score_display = f"{score}/10"
     rank_display = f" #{rank}" if rank else ""
-    return score_display, rank_display
+    
+    # Parse new fields
+    confidence = card.get("confidence")
+    confidence_display = f"{confidence}%" if confidence is not None else "N/A"
+    
+    breakdown_text = ""
+    bd = card.get("score_breakdown")
+    if bd:
+        if isinstance(bd, str):
+            try:
+                bd = json.loads(bd)
+            except:
+                bd = {}
+        if isinstance(bd, dict):
+            breakdown_text = (
+                f"• Recency: {bd.get('recency', 0)}/30\\n"
+                f"• Authority: {bd.get('authority', 0)}/30\\n"
+                f"• Relevance: {bd.get('relevance', 0)}/20\\n"
+                f"• Usability: {bd.get('usability', 0)}/10\\n"
+                f"• Freshness: {bd.get('freshness', 0)}/10"
+            )
+            
+    reasoning_text = ""
+    rs = card.get("reasoning")
+    if rs:
+        if isinstance(rs, str):
+            try:
+                rs = json.loads(rs)
+            except:
+                rs = []
+        if isinstance(rs, list):
+            reasoning_text = "\\n".join(f"- {r}" for r in rs)
+            
+    return score_display, rank_display, confidence_display, breakdown_text, reasoning_text
 
 
 def build_card_header(card: dict) -> str:
@@ -198,7 +231,7 @@ def build_card_header(card: dict) -> str:
     niche = html_escape(card.get("niche") or "")
     project_url = html_escape(card.get("project_url") or "")
     site_domain = html_escape(card.get("site_domain") or "")
-    score_display, rank_display = _card_score_display(card)
+    score_display, rank_display, confidence_display, breakdown_text, reasoning_text = _card_score_display(card)
 
     target_title = html_escape(
         truncate(card.get("target_title") or card.get("content_title") or "Backlink opportunity", 160)
@@ -212,13 +245,25 @@ def build_card_header(card: dict) -> str:
     go_here = submission_url if submission_url_raw else "(locate exact submission page)"
 
     lines = [
-        f"<b>BACKLINK OPPORTUNITY{rank_display}: {target_title}</b>",
-        f"<b>Target:</b> {site_domain}{score_display}",
+        f"<b>OPPORTUNITY{rank_display}</b>",
+        f"<b>Title:</b> {target_title}",
+        f"<b>Platform:</b> {site_domain}",
+        f"<b>Score:</b> {score_display}  |  <b>Confidence:</b> {confidence_display}",
+    ]
+    
+    if breakdown_text:
+        lines.extend(["", "📊 <b>Breakdown:</b>", breakdown_text])
+        
+    if reasoning_text:
+        lines.extend(["", "💡 <b>Reason:</b>", reasoning_text])
+        
+    lines.extend([
+        "",
         f"<b>Niche:</b> {niche} | <b>Project:</b> {project_url}",
         f"<b>Action:</b> {posting_action or 'submit'}",
-    ]
+    ])
 
-    if target_title:
+    if not breakdown_text and target_title:
         lines.extend(["", "<b>Target Title:</b>", f"{target_title}"])
 
     if opportunity_context:
@@ -410,6 +455,9 @@ def opportunity_to_card(
         "posting_steps": opp.posting_steps,
         "telegram_group": opp.telegram_group,
         "status": opp.status,
+        "score_breakdown": getattr(opp, "score_breakdown", None),
+        "confidence": getattr(opp, "confidence", None),
+        "reasoning": getattr(opp, "reasoning", None),
     }
 
 
@@ -566,6 +614,9 @@ def build_cards_from_manifest(manifest_path: str) -> tuple[list[dict], str, str]
             "telegram_group": "",
             "telegram_message_id": None,
             "status": "pending",
+            "score_breakdown": post.get("score_breakdown") or audit.get("score_breakdown"),
+            "confidence": post.get("confidence") or audit.get("confidence"),
+            "reasoning": post.get("reasoning") or audit.get("reasoning"),
         }
         cards.append(card)
 

@@ -127,7 +127,41 @@ def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None 
     freshness_bonus_part = _freshness_bonus(hours) * 10
 
     raw = platform_weight_score + recency_part + niche_overlap_part + host_usability_part + freshness_bonus_part
-    return round(max(0.0, min(100.0, raw)), 2)
+    total_score = round(max(0.0, min(100.0, raw)), 2)
+    
+    confidence = int(min(100, max(0, (relevance / 10.0 * 50) + (host_usability / 100.0 * 50))))
+    
+    breakdown = {
+        "recency": round(recency_part, 2),
+        "authority": round(platform_weight_score, 2),
+        "relevance": round(niche_overlap_part, 2),
+        "usability": round(host_usability_part, 2),
+        "freshness": round(freshness_bonus_part, 2)
+    }
+    
+    reasoning = []
+    if recency_part >= 20:
+        reasoning.append("Highly recent discussion")
+    elif recency_part >= 10:
+        reasoning.append("Moderately active thread")
+        
+    if platform_weight_score >= 20:
+        reasoning.append("High authority platform")
+        
+    if niche_overlap_part >= 15:
+        reasoning.append("Strong match with niche")
+        
+    if freshness_bonus_part > 0:
+        reasoning.append("Ultra-fresh content bonus")
+        
+    if not reasoning:
+        reasoning.append("Standard opportunity")
+        
+    opp["score_breakdown"] = breakdown
+    opp["confidence"] = confidence
+    opp["reasoning"] = reasoning
+    
+    return total_score
 
 
 def compute_site_usability(
@@ -234,7 +268,16 @@ def main() -> None:
     # Sanity check: if all scores are 0 fall back to recency ordering (same formula, just platform_weight=0.55)
     if scored and all(s["score_100"] == 0 for s in scored):
         for s in scored:
-            s["score_100"] = score_opportunity({**s, "platform_weight": 0.55}, 50.0)
+            opp_score = score_opportunity({**s, "platform_weight": 0.55}, 50.0)
+            s["score_100"] = opp_score
+            # breakdown is updated internally by score_opportunity since we passed a copy, we need to extract it
+            # wait, if we passed a copy, we should get it back
+            dummy = {**s, "platform_weight": 0.55}
+            opp_score = score_opportunity(dummy, 50.0)
+            s["score_100"] = opp_score
+            s["score_breakdown"] = dummy.get("score_breakdown", {})
+            s["confidence"] = dummy.get("confidence", 0)
+            s["reasoning"] = dummy.get("reasoning", [])
 
     output = {
         "status": "ok",

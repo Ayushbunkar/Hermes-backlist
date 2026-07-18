@@ -47,6 +47,9 @@ CREATE TABLE IF NOT EXISTS opportunities (
   card_sent_at TEXT,
   run_dir TEXT,
   status TEXT DEFAULT 'pending',
+  score_breakdown TEXT,
+  confidence INTEGER,
+  reasoning TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_tg_msg ON opportunities(telegram_group, telegram_message_id);
@@ -126,6 +129,9 @@ class Opportunity:
     status: str = "pending"
     score_100: float | None = None
     rank: int | None = None
+    score_breakdown: str | None = None
+    confidence: int | None = None
+    reasoning: str | None = None
 
 
 @dataclass
@@ -168,6 +174,9 @@ _OPPORTUNITY_MIGRATIONS: dict[str, str] = {
     "posting_steps": "ALTER TABLE opportunities ADD COLUMN posting_steps TEXT",
     "score_100": "ALTER TABLE opportunities ADD COLUMN score_100 REAL",
     "rank": "ALTER TABLE opportunities ADD COLUMN rank INTEGER",
+    "score_breakdown": "ALTER TABLE opportunities ADD COLUMN score_breakdown TEXT",
+    "confidence": "ALTER TABLE opportunities ADD COLUMN confidence INTEGER",
+    "reasoning": "ALTER TABLE opportunities ADD COLUMN reasoning TEXT",
 }
 
 
@@ -259,8 +268,8 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               submission_url, target_title, target_excerpt, opportunity_context,
               opportunity_freshness, posting_action, posting_steps,
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
-              score_100, rank
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              score_100, rank, score_breakdown, confidence, reasoning
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_id,
@@ -296,6 +305,9 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
                 str(card.get("status") or "pending"),
                 card.get("score_100"),
                 card.get("rank"),
+                json.dumps(card.get("score_breakdown")) if isinstance(card.get("score_breakdown"), dict) else card.get("score_breakdown"),
+                card.get("confidence"),
+                json.dumps(card.get("reasoning")) if isinstance(card.get("reasoning"), list) else card.get("reasoning"),
             ),
         )
         conn.commit()
