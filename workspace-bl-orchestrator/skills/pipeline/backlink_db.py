@@ -217,7 +217,9 @@ def utc_now_sqlite() -> str:
 
 
 def _ensure_columns(conn: psycopg2.extensions.connection) -> None:
-    existing = {row["name"] for row in conn.execute("SELECT 1")}
+    existing = {row["column_name"] for row in conn.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'opportunities'")}
+    if not existing:
+        return
     for column, ddl in _OPPORTUNITY_MIGRATIONS.items():
         if column not in existing:
             conn.execute(ddl)

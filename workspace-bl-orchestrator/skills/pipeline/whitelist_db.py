@@ -219,9 +219,8 @@ def _connect(db_path: str = None):
 
 def _run_column_migrations(conn: psycopg2.extensions.connection) -> None:
     for table, columns in _COLUMN_MIGRATIONS.items():
-        try:
-            existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
-        except sqlite3.OperationalError:
+        existing = {row["column_name"] for row in conn.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table}'")}
+        if not existing:
             continue  # table not created yet; executescript will handle it
         for col, ddl in columns.items():
             if col not in existing:
