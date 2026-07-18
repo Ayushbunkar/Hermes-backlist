@@ -105,6 +105,14 @@ CREATE TABLE IF NOT EXISTS system_settings (
   business_thresholds TEXT DEFAULT '{}',
   learning_enabled INTEGER DEFAULT 1
 );
+CREATE TABLE IF NOT EXISTS notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  is_read INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT (datetime('now'))
+);
 """
 
 
@@ -393,6 +401,28 @@ def update_settings(updates: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
             query = f"UPDATE system_settings SET {', '.join(fields)} WHERE id = 1"
             conn.execute(query, tuple(values))
             conn.commit()
+
+
+def add_notification(type: str, title: str, message: str, db_path: str = DEFAULT_DB_PATH) -> None:
+    with _connect(db_path) as conn:
+        conn.execute(
+            "INSERT INTO notifications (type, title, message) VALUES (?, ?, ?)",
+            (type, title, message)
+        )
+        conn.commit()
+
+def get_notifications(limit: int = 50, offset: int = 0, db_path: str = DEFAULT_DB_PATH) -> list[dict[str, Any]]:
+    with _connect(db_path) as conn:
+        rows = conn.execute(
+            "SELECT * FROM notifications ORDER BY created_at DESC LIMIT ? OFFSET ?", 
+            (limit, offset)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+def mark_notification_read(notif_id: int, db_path: str = DEFAULT_DB_PATH) -> None:
+    with _connect(db_path) as conn:
+        conn.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", (notif_id,))
+        conn.commit()
 
 
 def lookup_by_message_id(

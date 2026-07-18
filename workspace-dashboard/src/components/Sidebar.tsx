@@ -1,5 +1,13 @@
 import Link from 'next/link';
-import { Home, BarChart2, MessageSquare, Settings } from 'lucide-react';
+import { LayoutDashboard, Database, Settings, MessageSquare, Bell, BarChart2 } from 'lucide-react';
+
+const menuItems = [
+  { name: 'Overview', icon: LayoutDashboard, href: '/' },
+  { name: 'Opportunities', icon: Database, href: '/opportunities' },
+  { name: 'Hermes AI', icon: MessageSquare, href: '/ai-chat' },
+  { name: 'Notifications', icon: Bell, href: '/notifications' },
+  { name: 'Settings', icon: Settings, href: '/settings' },
+];
 
 export default function Sidebar() {
   return (
@@ -13,22 +21,12 @@ export default function Sidebar() {
         </h1>
       </div>
       <nav className="flex-1 px-4 space-y-2 mt-4">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 bg-gray-800 text-white rounded-xl transition-colors">
-          <Home size={20} />
-          Overview
-        </Link>
-        <Link href="/opportunities" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-xl transition-colors">
-          <BarChart2 size={20} />
-          Opportunities
-        </Link>
-        <Link href="/ai-chat" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-xl transition-colors">
-          <MessageSquare size={20} />
-          AI Assistant
-        </Link>
-        <Link href="/settings" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-xl transition-colors">
-          <Settings size={20} />
-          Settings
-        </Link>
+        {menuItems.map((item) => (
+          <Link key={item.name} href={item.href} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-xl transition-colors">
+            <item.icon size={20} />
+            {item.name}
+          </Link>
+        ))}
       </nav>
       <div className="p-4 border-t border-gray-800">
         <div className="text-xs text-gray-500 text-center">Hermes AI Dashboard v1.0</div>

@@ -280,6 +280,7 @@ def phase_gate() -> None:
             new_status = "GATED" if lead.get("gate_passed") else "REJECTED"
             if new_status == "GATED":
                 passed += 1
+                bdb.add_notification("approval", "Opportunity Approved", f"A new opportunity ({lead.get('site_url', '')}) passed the AI Quality Gate with score {lead.get('score', 0)}.", db_path=DB_PATH)
             wdb.update_lead(
                 lead["id"],
                 {
@@ -414,10 +415,12 @@ def phase_draft() -> None:
         result = draft_and_send(project, gated, db_path=DB_PATH, log_fn=log)
         if result.error:
             log(f"draft: FAILED for {project.get('project_url')}: {result.error}")
+            bdb.add_notification("error", "Telegram Draft Failed", f"Failed to send cards for {project.get('project_url')}: {result.error}", db_path=DB_PATH)
             continue
         if result.sent > 0:
             _last_delivery_ts[pid] = time.time()
             log(f"draft: SENT {result.sent} card(s) for {project.get('project_url')}")
+            bdb.add_notification("telegram", "Telegram Cards Delivered", f"Successfully delivered {result.sent} card(s) to the Telegram group.", db_path=DB_PATH)
 
 
 def phase_resurface() -> None:
