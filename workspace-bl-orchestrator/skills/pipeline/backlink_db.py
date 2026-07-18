@@ -369,8 +369,7 @@ def prune_old_archives(days: int = 30, db_path: str = DEFAULT_DB_PATH) -> int:
 
 def get_settings(user_id: int = 1, db_path: str = None) -> dict[str, Any]:
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT * FROM system_settings WHERE user_id = %s", (user_id,))
-        row = conn.fetchone()
+        row = conn.execute("SELECT * FROM system_settings WHERE user_id = %s", (user_id,)).fetchone()
         if not row:
             return {
                 "min_score": 80,
