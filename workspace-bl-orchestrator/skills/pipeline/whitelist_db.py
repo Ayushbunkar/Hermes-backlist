@@ -253,7 +253,7 @@ def upsert_project(project_url: str, niche: str, name: str = "", db_path: str = 
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT INTO projects (project_url, niche, name) VALUES (%s, %s, %s)",
+            "INSERT INTO projects (project_url, niche, name) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
             (project_url.strip(), niche.strip(), name.strip()),
         )
         conn.commit()
@@ -416,7 +416,7 @@ def mark_seen_batch(project_id: int, url_keys: list[str], db_path: str = DEFAULT
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.executemany(
-            "INSERT INTO seen_opportunities (project_id, url_key) VALUES (%s, %s)",
+            "INSERT INTO seen_opportunities (project_id, url_key) VALUES (%s, %s) ON CONFLICT DO NOTHING",
             [(project_id, k) for k in url_keys],
         )
         conn.commit()
@@ -448,7 +448,7 @@ def register_run(run_id: str, project_id: int | None = None, db_path: str = DEFA
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT INTO pipeline_runs (run_id, project_id, status) VALUES (%s, %s, 'running')",
+            "INSERT INTO pipeline_runs (run_id, project_id, status) VALUES (%s, %s, 'running') ON CONFLICT DO NOTHING",
             (run_id, project_id),
         )
         conn.commit()
@@ -1276,7 +1276,7 @@ def queue_domain_candidate(
         cur = conn.execute(
             """
             INSERT INTO domain_candidates (project_id, domain, source_url)
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s, %s) ON CONFLICT DO NOTHING
             """,
             (project_id, dom, source_url),
         )

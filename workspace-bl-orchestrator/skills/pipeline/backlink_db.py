@@ -230,7 +230,7 @@ def init_db(db_path: str = DEFAULT_DB_PATH) -> None:
         conn.executescript(_SCHEMA)
         _ensure_columns(conn)
         # Ensure default settings row exists
-        conn.execute("INSERT INTO system_settings (id) VALUES (1)")
+        conn.execute("INSERT INTO system_settings (id) VALUES (1) ON CONFLICT DO NOTHING")
         conn.commit()
 
 
