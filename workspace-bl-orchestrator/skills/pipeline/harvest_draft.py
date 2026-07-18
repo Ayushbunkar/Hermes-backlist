@@ -110,10 +110,18 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
     name = project.get("name") or project.get("niche") or ""
     queue_path = os.path.join(run_dir, "content_queue.json")
     posts_path = os.path.join(run_dir, "content", "posts.json")
+    
+    queue_content = ""
+    try:
+        with open(queue_path, "r", encoding="utf-8") as f:
+            queue_content = f.read()
+    except Exception as e:
+        log(f"draft: Could not read queue {e}")
+        
     task = (
         "Follow your SOUL. Create submission-ready backlink content for each opportunity.\n"
         f"RUN_DIR={run_dir}\n"
-        f"Read opportunities from: {queue_path}\n"
+        f"Here is the JSON list of opportunities to write content for:\n{queue_content}\n\n"
         f"Project URL: {project['project_url']}\n"
         f"Niche: {project.get('niche') or ''}\n"
         f"Project name: {name}\n"
