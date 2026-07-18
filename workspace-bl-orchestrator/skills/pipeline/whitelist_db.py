@@ -1253,7 +1253,7 @@ def get_rearm_candidates(
             WHERE h.project_id = %s
               AND COALESCE(s.editorial_locked, 0) = 0
               AND h.status IN ('SENT', 'REJECTED', 'GATED', 'SCORED', 'FAILED')
-              AND s.first_seen_at <= NOW() AT TIME ZONE 'UTC' + CAST(%s || ' days' AS INTERVAL)
+              AND CAST(s.first_seen_at AS timestamp) <= NOW() AT TIME ZONE 'UTC' + CAST(%s || ' days' AS INTERVAL)
             ORDER BY h.updated_at ASC
             LIMIT %s
             """,
