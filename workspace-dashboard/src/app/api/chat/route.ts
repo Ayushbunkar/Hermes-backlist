@@ -15,11 +15,11 @@ export async function POST(request: Request) {
     const lowerMsg = message.toLowerCase();
     
     if (lowerMsg.includes('pending')) {
-      const result = await client.query('SELECT COUNT(*) FROM opportunities WHERE status = pending');
+      const result = await client.query("SELECT COUNT(*) FROM opportunities WHERE status = 'pending'");
       aiResponse = `You currently have ${result.rows[0].count} pending opportunities waiting for approval. Would you like to review them?`;
     } 
     else if (lowerMsg.includes('highest impact') || lowerMsg.includes('top')) {
-      const result = await client.query('SELECT title, score_100 FROM opportunities WHERE status = approved ORDER BY score_100 DESC LIMIT 3');
+      const result = await client.query("SELECT title, score_100 FROM opportunities WHERE status = 'approved' ORDER BY score_100 DESC LIMIT 3");
       const tops = result.rows.map((r: any) => `- ${r.title} (Score: ${r.score_100})`);
       aiResponse = `Here are the top opportunities:\n\n${tops.join('\n')}`;
     }
