@@ -8,11 +8,16 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [platformInput, setPlatformInput] = useState('');
+
   useEffect(() => {
     fetch('/api/settings')
       .then(res => res.json())
       .then(d => {
         setSettings(d);
+        if (d.platforms) {
+          setPlatformInput(d.platforms.join(', '));
+        }
         setLoading(false);
       });
   }, []);
@@ -37,10 +42,7 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
-  const handleArrayChange = (field: string, val: string) => {
-    const arr = val.split(',').map(s => s.trim()).filter(Boolean);
-    setSettings({ ...settings, [field]: arr });
-  };
+  // Removed buggy handleArrayChange
 
   const handleNestedChange = (field: string, subfield: string, val: string) => {
     setSettings({
@@ -131,8 +133,12 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-400 mb-1">Active Platforms (Comma separated)</label>
             <input 
               type="text" 
-              value={settings.platforms.join(', ')} 
-              onChange={e => handleArrayChange('platforms', e.target.value)}
+              value={platformInput} 
+              onChange={e => {
+                setPlatformInput(e.target.value);
+                const arr = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                setSettings({ ...settings, platforms: arr });
+              }}
               className="w-full bg-gray-950 border border-gray-700 text-white px-4 py-2 rounded-lg"
             />
             <p className="text-xs text-gray-500 mt-1">e.g., reddit, news, linkedin, hackernews</p>
