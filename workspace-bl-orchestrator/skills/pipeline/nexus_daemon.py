@@ -459,7 +459,7 @@ def tick() -> None:
     
     # Record heartbeat
     try:
-        bdb.update_heartbeat(DB_PATH)
+        bdb.update_heartbeat(db_path=DB_PATH)
     except Exception as e:
         log(f"heartbeat error: {e}")
 
@@ -528,7 +528,7 @@ def main() -> int:
     ticks = 0
     while True:
         try:
-            settings = bdb.get_settings(DB_PATH)
+            settings = bdb.get_settings(db_path=DB_PATH)
             if "schedule_frequency_minutes" in settings:
                 args.air_gap = int(settings["schedule_frequency_minutes"]) * 60
             if "min_score" in settings:
