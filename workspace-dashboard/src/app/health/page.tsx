@@ -26,6 +26,7 @@ export default function HealthPage() {
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
   if (!health) return <div className="text-gray-400 text-center py-20">Fetching system metrics...</div>;
+  if (health.error) return <div className="text-red-400 text-center py-20">Error: {health.error}</div>;
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">

@@ -5,8 +5,8 @@ import { getSession } from '@/lib/auth';
 
 export async function GET() {
   const session = await getSession();
-  if (!session || session.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden. Admins only.' }, { status: 403 });
+  if (!session) {
+    return NextResponse.json({ error: 'Forbidden. Please login first.' }, { status: 403 });
   }
 
   const healthData = {
