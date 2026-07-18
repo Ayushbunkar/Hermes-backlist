@@ -9,8 +9,7 @@ except ImportError:
     pass
 
 import config
-
-DB_PATH = config.BL_DB_PATH
+import sqlite3
 BOT_TOKEN = config.TELEGRAM_BOT_TOKEN
 
 logger = logging.getLogger("telegram_router")
