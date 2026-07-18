@@ -13,12 +13,17 @@ echo "-> Starting Nexus Daemon (Hunter)..."
 python workspace-bl-orchestrator/skills/pipeline/nexus_daemon.py &
 DAEMON_PID=$!
 
+# 3. Start the Next.js Dashboard
+echo "-> Starting Next.js Dashboard..."
+cd workspace-dashboard && npm run dev &
+DASHBOARD_PID=$!
+
 echo "========================================="
-echo "✅ Both engines are LIVE! Press Ctrl+C to stop."
+echo "✅ Everything is LIVE (Frontend + Backend)! Press Ctrl+C to stop."
 echo "========================================="
 
-# Trap Ctrl+C (SIGINT) so it cleanly kills both background processes when you exit
-trap "echo '🛑 Stopping Hermes Engines...'; kill $ROUTER_PID $DAEMON_PID; exit" INT
+# Trap Ctrl+C (SIGINT) so it cleanly kills all background processes when you exit
+trap "echo '🛑 Stopping Hermes Engines and Dashboard...'; kill $ROUTER_PID $DAEMON_PID $DASHBOARD_PID; exit" INT
 
 # Wait keeps the script running and printing logs to this terminal
 wait
