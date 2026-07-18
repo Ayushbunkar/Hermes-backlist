@@ -26,7 +26,7 @@ BIFROST_BASE_URL = os.environ.get("BIFROST_BASE_URL", "https://placing-reliabili
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "ollama/qwen3-coder-next:latest")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
-SUPABASE_CONNECTION_STRING = os.environ.get("SUPABASE_CONNECTION_STRING", "")
+SUPABASE_CONNECTION_STRING = os.environ.get("SUPABASE_CONNECTION_STRING", os.environ.get("DATABASE_URL", ""))
 BL_DB_PATH = os.environ.get("BL_DB_PATH", os.path.join(os.path.expanduser("~"), ".openclaw-backlink", "data", "backlink.db"))
 
 class PostgresClient:
