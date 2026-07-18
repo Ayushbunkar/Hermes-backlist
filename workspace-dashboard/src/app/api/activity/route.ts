@@ -3,6 +3,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const logPath = path.join(os.homedir(), '.openclaw-backlink', 'data', 'activity_log.json');
