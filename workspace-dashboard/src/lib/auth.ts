@@ -15,9 +15,9 @@ export async function verifyToken(token: string) {
   }
 }
 
-export async function getSession() {
+export async function getSession(): Promise<any> {
   const cookieStore = await cookies();
   const token = cookieStore.get('hermes_token')?.value;
   if (!token) return null;
-  return verifyToken(token);
+  return verifyToken(token) as any;
 }
