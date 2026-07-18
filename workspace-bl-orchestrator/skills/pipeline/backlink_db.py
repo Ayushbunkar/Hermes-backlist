@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   last_reminder TEXT,
   reminder_count INTEGER DEFAULT 0,
   pending_since TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (timezone('utc', now()))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_tg_msg ON opportunities(telegram_group, telegram_message_id);
 CREATE INDEX IF NOT EXISTS idx_bl_run ON opportunities(run_id);
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS feedback_events (
   source TEXT NOT NULL,
   raw_payload TEXT,
   edited_content TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (timezone('utc', now()))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_feedback ON feedback_events(opportunity_id, event_type);
 
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS content_versions (
   content_md TEXT NOT NULL,
   user_id TEXT,
   user_username TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (timezone('utc', now()))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_versions ON content_versions(opportunity_id, version_type);
 
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS edit_sessions (
   state TEXT NOT NULL,
   prompt_message_id INTEGER,
   suggested_version_id INTEGER,
-  created_at TEXT DEFAULT (datetime('now')),
+  created_at TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(opportunity_id, user_id)
 );
 CREATE TABLE IF NOT EXISTS system_settings (
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS system_settings (
   telegram_formatting TEXT DEFAULT '',
   business_thresholds TEXT DEFAULT '{}',
   learning_enabled INTEGER DEFAULT 1,
-  last_heartbeat TEXT DEFAULT (datetime('now'))
+  last_heartbeat TEXT DEFAULT (timezone('utc', now()))
 );
 CREATE TABLE IF NOT EXISTS notifications (
   id INTEGER PRIMARY KEY ,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   title TEXT NOT NULL,
   message TEXT NOT NULL,
   is_read INTEGER DEFAULT 0,
-  created_at TEXT DEFAULT (datetime('now'))
+  created_at TEXT DEFAULT (timezone('utc', now()))
 );
 """
 
@@ -217,7 +217,7 @@ def utc_now_sqlite() -> str:
 
 
 def _ensure_columns(conn: psycopg2.extensions.connection) -> None:
-    existing = {row["name"] for row in conn.execute("PRAGMA table_info(opportunities)")}
+    existing = {row["name"] for row in conn.execute("SELECT 1")}
     for column, ddl in _OPPORTUNITY_MIGRATIONS.items():
         if column not in existing:
             conn.execute(ddl)
@@ -228,7 +228,7 @@ def init_db(db_path: str = DEFAULT_DB_PATH) -> None:
         conn.executescript(_SCHEMA)
         _ensure_columns(conn)
         # Ensure default settings row exists
-        conn.execute("INSERT OR IGNORE INTO system_settings (id) VALUES (1)")
+        conn.execute("INSERT INTO INTO system_settings (id) VALUES (1)")
         conn.commit()
 
 

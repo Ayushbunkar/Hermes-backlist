@@ -30,7 +30,7 @@ def send_telegram_reminder(chat_id: str, count: int, oldest_days: int) -> bool:
         return False
     
     text = (
-        "?? <b>Reminder</b>\n"
+        "%s%s <b>Reminder</b>\n"
         f"{count} Opportunities still pending.\n"
         f"Oldest: {oldest_days} days.\n"
         "Please review them."
@@ -111,7 +111,7 @@ def process_reminders():
         with conn:
             for u in updates:
                 conn.execute(
-                    "UPDATE opportunities SET status = ?, reminder_count = ?, last_reminder = ? WHERE id = ?",
+                    "UPDATE opportunities SET status = %s, reminder_count = %s, last_reminder = %s WHERE id = %s",
                     (u["status"], u["reminder_count"], u["last_reminder"], u["id"])
                 )
     conn.close()

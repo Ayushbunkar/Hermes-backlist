@@ -175,7 +175,7 @@ def format_draft_plain(text: str) -> str:
     text = re.sub(r"\[([^\]]*)\]\(([^)]+)\)", _link_repl, text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
     text = re.sub(r"__([^_]+)__", r"\1", text)
-    text = re.sub(r"(?<!\*)\*(?!\*)([^*]+)(?<!\*)\*(?!\*)", r"\1", text)
+    text = re.sub(r"(%s<!\*)\*(%s!\*)([^*]+)(%s<!\*)\*(%s!\*)", r"\1", text)
     return text.strip()
 
 

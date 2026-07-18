@@ -29,34 +29,9 @@ TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 SUPABASE_CONNECTION_STRING = os.environ.get("SUPABASE_CONNECTION_STRING", "")
 BL_DB_PATH = os.environ.get("BL_DB_PATH", os.path.join(os.path.expanduser("~"), ".openclaw-backlink", "data", "backlink.db"))
 
-class PostgresSQLiteAdapter:
+class PostgresClient:
     def __init__(self, conn):
         self._conn = conn
-        self.row_factory = None
-
-    def _translate_sql(self, sql):
-        import re
-        if sql.startswith("PRAGMA table_info("):
-            match = re.search(r"PRAGMA table_info\((.+?)\)", sql)
-            if match:
-                table_name = match.group(1).strip("'\"")
-                return f"SELECT column_name AS name FROM information_schema.columns WHERE table_name = '{table_name}'"
-
-        sql = re.sub(r"datetime\('now',\s*\?\s*\|\|\s*'([^']+)'\)", r"NOW() AT TIME ZONE 'UTC' + CAST(? || ' \1' AS INTERVAL)", sql)
-        sql = re.sub(r"datetime\('now',\s*\?\)", r"NOW() AT TIME ZONE 'UTC' + CAST(? AS INTERVAL)", sql)
-        sql = re.sub(r"datetime\('now',\s*'([^']+)'\)", r"NOW() AT TIME ZONE 'UTC' + INTERVAL '\1'", sql)
-        sql = sql.replace("datetime('now')", "timezone('utc', now())")
-        
-        is_ignore = "INSERT OR IGNORE" in sql
-        sql = sql.replace("INSERT OR IGNORE", "INSERT INTO")
-        sql = sql.replace("INSERT OR REPLACE", "INSERT INTO")
-        sql = sql.replace('?', '%s')
-        sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
-        sql = sql.replace("PRAGMA journal_mode=WAL", "SELECT 1")
-        sql = sql.replace("PRAGMA foreign_keys=ON", "SELECT 1")
-        if is_ignore and "ON CONFLICT" not in sql:
-            sql += " ON CONFLICT DO NOTHING"
-        return sql
 
     def __enter__(self):
         return self
@@ -70,19 +45,36 @@ class PostgresSQLiteAdapter:
 
     def execute(self, sql, parameters=()):
         import psycopg2.extras
+        from psycopg2.errors import UniqueViolation
+        is_ignore = "INSERT OR IGNORE" in sql
         c = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        c.execute(self._translate_sql(sql), parameters)
+        try:
+            c.execute(sql, parameters)
+        except UniqueViolation:
+            if is_ignore:
+                self._conn.rollback()
+            else:
+                raise
         return c
 
     def executemany(self, sql, parameters_seq):
         import psycopg2.extras
+        from psycopg2.errors import UniqueViolation
+        is_ignore = "INSERT OR IGNORE" in sql
         c = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        c.executemany(self._translate_sql(sql), parameters_seq)
+        if is_ignore:
+            for p in parameters_seq:
+                try:
+                    c.execute(sql, p)
+                except UniqueViolation:
+                    self._conn.rollback()
+        else:
+            c.executemany(sql, parameters_seq)
         return c
 
     def executescript(self, sql):
         c = self._conn.cursor()
-        c.execute(self._translate_sql(sql))
+        c.execute(sql)
         return c
 
     def commit(self):
@@ -99,16 +91,7 @@ def get_db_connection():
         import psycopg2
         import psycopg2.extras
         conn = psycopg2.connect(SUPABASE_CONNECTION_STRING)
-        return PostgresSQLiteAdapter(conn)
+        return PostgresClient(conn)
     else:
-        import sqlite3
-        return sqlite3.connect(BL_DB_PATH)
+        raise ValueError("SUPABASE_CONNECTION_STRING is not set in environment variables. Database connection failed.")
 
-if SUPABASE_CONNECTION_STRING:
-    class MockSQLite3:
-        class OperationalError(Exception): pass
-        class IntegrityError(Exception): pass
-        class Error(Exception): pass
-        Row = "Row"
-        Connection = "Connection"
-    sys.modules['sqlite3'] = MockSQLite3()

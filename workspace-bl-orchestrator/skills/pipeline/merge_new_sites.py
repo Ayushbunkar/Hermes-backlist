@@ -11,7 +11,7 @@ Input JSON format (written by bl-site-finder to $RUN_DIR/finder/new_sites.json):
     ...
   ]
 
-Idempotent: INSERT OR IGNORE on (project_id, domain) — safe to re-run.
+Idempotent: INSERT INTO on (project_id, domain) — safe to re-run.
 Caps at MAX_NEW_SITES_PER_RUN (5) to prevent whitelist bloat.
 
 Usage:

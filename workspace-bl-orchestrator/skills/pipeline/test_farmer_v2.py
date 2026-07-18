@@ -148,7 +148,7 @@ class ScanPathTests(unittest.TestCase):
 
         fake_results = [{
             "url": "https://www.reddit.com/r/Bitcoin/comments/abc123/test_thread/",
-            "title": "Best crypto wallet?",
+            "title": "Best crypto wallet%s",
             "snippet": "Looking for bitcoin wallet recommendations 2 hours ago",
         }]
 
@@ -215,9 +215,9 @@ class SearchToolNormalizeTests(unittest.TestCase):
         import search_tool  # noqa: E402
 
         raw = [
-            {"title": "Good hit", "href": "https://news.ycombinator.com/item?id=1", "body": "snippet"},
+            {"title": "Good hit", "href": "https://news.ycombinator.com/item%sid=1", "body": "snippet"},
             "malformed-string-item",
-            {"title": "Another", "url": "https://news.ycombinator.com/item?id=2", "snippet": "text"},
+            {"title": "Another", "url": "https://news.ycombinator.com/item%sid=2", "snippet": "text"},
         ]
 
         with patch.object(search_tool, "_raw_search", return_value=raw):
@@ -229,8 +229,8 @@ class SearchToolNormalizeTests(unittest.TestCase):
 
         self.assertEqual(len(results), 2)
         urls = {r["url"] for r in results}
-        self.assertIn("https://news.ycombinator.com/item?id=1", urls)
-        self.assertIn("https://news.ycombinator.com/item?id=2", urls)
+        self.assertIn("https://news.ycombinator.com/item%sid=1", urls)
+        self.assertIn("https://news.ycombinator.com/item%sid=2", urls)
 
 
 class GateAgentPathTests(unittest.TestCase):
@@ -715,7 +715,7 @@ class FlywheelTests(unittest.TestCase):
             conn.execute(
                 """
                 INSERT INTO harvest_leads (project_id, whitelist_site_id, url, url_key, domain, status)
-                VALUES (?, ?, ?, ?, 'example.com', 'SENT')
+                VALUES (%s, %s, %s, %s, 'example.com', 'SENT')
                 """,
                 (self.pid, self.site_id, f"https://{key}", key),
             )
@@ -728,14 +728,14 @@ class FlywheelTests(unittest.TestCase):
             conn.execute(
                 """
                 INSERT INTO harvest_leads (project_id, whitelist_site_id, url, url_key, domain, status)
-                VALUES (?, ?, ?, ?, 'example.com', 'SENT')
+                VALUES (%s, %s, %s, %s, 'example.com', 'SENT')
                 """,
                 (self.pid, self.site_id, f"https://{key}", key),
             )
             conn.execute(
                 """
                 INSERT INTO seen_opportunities (project_id, url_key, first_seen_at, editorial_locked)
-                VALUES (?, ?, datetime('now', '-30 days'), 0)
+                VALUES (%s, %s, NOW() AT TIME ZONE 'UTC' + INTERVAL '-30 days', 0)
                 """,
                 (self.pid, key),
             )

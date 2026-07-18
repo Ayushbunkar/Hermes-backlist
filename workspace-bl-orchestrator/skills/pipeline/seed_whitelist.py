@@ -2,7 +2,7 @@
 """seed_whitelist.py — Seed a project's whitelist from platforms.json tiers 1-2.
 
 Run on day-1 of a project so the scanner immediately has sites to work with.
-Safe to re-run: INSERT OR IGNORE on (project_id, domain) means duplicates are skipped.
+Safe to re-run: INSERT INTO on (project_id, domain) means duplicates are skipped.
 
 Usage:
     python3 seed_whitelist.py \
@@ -65,7 +65,7 @@ def seed(
 
     after = count_active_sites(project_id, db_path=db_path)
     seeded = after - before
-    return seeded, 0  # skipped count not precisely tracked (INSERT OR IGNORE)
+    return seeded, 0  # skipped count not precisely tracked (INSERT INTO)
 
 
 def main() -> None:

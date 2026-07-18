@@ -11,7 +11,7 @@ if _HERE not in sys.path:
 
 import whitelist_db as wdb  # noqa: E402
 
-GROUP_SESSION_KEY_RE = __import__("re").compile(r":group:(-?\d+)$")
+GROUP_SESSION_KEY_RE = __import__("re").compile(r":group:(-%s\d+)$")
 
 
 def parse_group_id_from_session_key(session_key: str | None) -> str | None:

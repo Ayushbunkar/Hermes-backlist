@@ -252,7 +252,7 @@ STEP_HANDLERS: dict[str, Callable[[dict, str], None]] = {
 
 
 def build_preview_text(answers: dict) -> str:
-    desc = answers.get("description") or "?"
+    desc = answers.get("description") or "%s"
     extras = answers.get("extra_domains") or []
     if extras:
         extra_line = ", ".join(extras)
@@ -260,10 +260,10 @@ def build_preview_text(answers: dict) -> str:
         extra_line = "\u26A0\uFE0F none added — defaults only (you can add more later via CLI)"
     return (
         "\U0001F517 <b>Review before creating the backlink project</b>\n\n"
-        f"Group: <code>{answers.get('group_id', '?')}</code>\n"
-        f"URL: <code>{answers.get('project_url', '?')}</code>\n"
-        f"Niche: {answers.get('niche', '?')}\n"
-        f"Name: {answers.get('name', '?')}\n"
+        f"Group: <code>{answers.get('group_id', '%s')}</code>\n"
+        f"URL: <code>{answers.get('project_url', '%s')}</code>\n"
+        f"Niche: {answers.get('niche', '%s')}\n"
+        f"Name: {answers.get('name', '%s')}\n"
         f"Description: {desc}\n\n"
         f"<b>Default sources:</b> {DEFAULT_SEED_LABEL}\n"
         f"<b>Extra domains:</b> {extra_line}\n\n"
@@ -275,11 +275,11 @@ def prompt_for(step: str, answers: dict) -> tuple[str, dict | None]:
     if step == "group_id":
         return INTRO_TEXT, None
     if step == "project_url":
-        return "What's the project's <b>website URL</b>? (e.g. https://example.com)", None
+        return "What's the project's <b>website URL</b>%s (e.g. https://example.com)", None
     if step == "niche":
-        return "What's the <b>niche</b>? (comma-separated keywords, e.g. 'crypto,blockchain')", None
+        return "What's the <b>niche</b>%s (comma-separated keywords, e.g. 'crypto,blockchain')", None
     if step == "name":
-        return "What's the project's <b>display name</b>? (e.g. 'Coinography')", None
+        return "What's the project's <b>display name</b>%s (e.g. 'Coinography')", None
     if step == "description":
         return (
             "One-line <b>description</b> of the site "
@@ -491,7 +491,7 @@ def cmd_wizard(args: argparse.Namespace) -> int:
         while True:
             print("\n" + cli_prompt_plain(step, answers))
             if step == "preview":
-                raw = input("Confirm? [yes/no]: ").strip().lower()
+                raw = input("Confirm%s [yes/no]: ").strip().lower()
                 if raw not in ("yes", "no", "y", "n"):
                     print("Enter yes or no.")
                     continue

@@ -6,7 +6,7 @@ Inserts each unique domain into whitelist_sites with:
   added_by = 'manual'
   status   = 'active'
 
-Idempotent: uses INSERT OR IGNORE on (project_id, domain). Safe to re-run.
+Idempotent: uses INSERT INTO on (project_id, domain). Safe to re-run.
 
 Usage:
     python3 migrate_recent_sites.py \

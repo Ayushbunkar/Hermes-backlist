@@ -42,7 +42,7 @@ def last_finder_run_days_ago(project_id: int, db_path: str) -> float | None:
             """
             SELECT julianday('now') - julianday(started_at) AS days_ago
             FROM pipeline_runs
-            WHERE project_id = ? AND status = 'success'
+            WHERE project_id = %s AND status = 'success'
             ORDER BY started_at DESC LIMIT 1
             """,
             (project_id,),

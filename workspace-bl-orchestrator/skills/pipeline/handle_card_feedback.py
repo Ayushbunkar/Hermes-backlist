@@ -50,10 +50,10 @@ _RE_REJECT = re.compile(r"^bl_reject:(.+)$")
 _RE_EDIT = re.compile(r"^bl_edit:(.+)$")
 _RE_EDIT_APPLY = re.compile(r"^bl_edit_apply:(.+)$")
 _RE_EDIT_CANCEL = re.compile(r"^bl_edit_cancel:(.+)$")
-_RE_TEXT_APPROVE = re.compile(r"^(?:APPROVE|approve)\s*$")
-_RE_TEXT_REJECT = re.compile(r"^(?:REJECT|reject)\s*$")
-_RE_TEXT_EDIT = re.compile(r"^(?:EDIT|edit)\s*$")
-_RE_ALERT = re.compile(r"\bbl-([A-Za-z0-9_-]+(?:-[A-Za-z0-9_-]+)*)\b")
+_RE_TEXT_APPROVE = re.compile(r"^(%s:APPROVE|approve)\s*$")
+_RE_TEXT_REJECT = re.compile(r"^(%s:REJECT|reject)\s*$")
+_RE_TEXT_EDIT = re.compile(r"^(%s:EDIT|edit)\s*$")
+_RE_ALERT = re.compile(r"\bbl-([A-Za-z0-9_-]+(%s:-[A-Za-z0-9_-]+)*)\b")
 
 
 def normalize_md(text: str) -> str:
@@ -348,7 +348,7 @@ def main() -> int:
             send_message(
                 token,
                 chat_id,
-                f"Edit saved for <code>{opp.alert_id}</code> — <b>{diff_summary}</b> changed.\n\nApply edit?",
+                f"Edit saved for <code>{opp.alert_id}</code> — <b>{diff_summary}</b> changed.\n\nApply edit%s",
                 reply_to_message_id=reply_id,
                 reply_markup=build_edit_confirm_keyboard(opp.alert_id),
             )

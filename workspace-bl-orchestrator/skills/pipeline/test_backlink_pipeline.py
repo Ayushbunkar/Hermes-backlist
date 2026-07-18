@@ -291,7 +291,7 @@ class BacklinkPipelineTests(unittest.TestCase):
                     "domain": "reddit.com",
                     "type": "qa_community",
                     "submission_url": "https://reddit.com/r/crypto/comments/abc/thread",
-                    "target_title": "Best crypto tracker?",
+                    "target_title": "Best crypto tracker%s",
                     "target_excerpt": "Looking for reliable memecoin price tracking tools.",
                     "opportunity_context": "Active question seeking exactly what the project offers.",
                     "opportunity_freshness": "2026-06-08 (posted ~2h ago)",
@@ -323,12 +323,11 @@ class BacklinkPipelineTests(unittest.TestCase):
         self.assertTrue(validated["sites"][1]["context_missing"])
 
     def test_db_migration_and_opportunity_fields(self) -> None:
-        import sqlite3
 
         db_path = os.path.join(self.tmp, "migrate_backlink.db")
         old_schema = """
         CREATE TABLE opportunities (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          id SERIAL PRIMARY KEY,
           run_id TEXT NOT NULL, alert_id TEXT NOT NULL, niche TEXT, project_url TEXT,
           project_name TEXT, site_url TEXT NOT NULL, site_domain TEXT, site_type TEXT,
           audit_score REAL, domain_authority INTEGER, dofollow INTEGER, recommendation TEXT,
@@ -336,7 +335,7 @@ class BacklinkPipelineTests(unittest.TestCase):
           backlink_anchor_text TEXT, image_path TEXT, submission_instructions TEXT,
           telegram_group TEXT NOT NULL, telegram_message_id INTEGER NOT NULL,
           card_sent_at TEXT, run_dir TEXT, status TEXT DEFAULT 'pending',
-          created_at TEXT DEFAULT (datetime('now'))
+          created_at TEXT DEFAULT (timezone('utc', now()))
         );
         """
         conn = sqlite3.connect(db_path)
@@ -358,7 +357,7 @@ class BacklinkPipelineTests(unittest.TestCase):
                 "alert_id": "bl-r2-test",
                 "site_url": "https://reddit.com/r/crypto/comments/abc",
                 "submission_url": "https://reddit.com/r/crypto/comments/abc",
-                "target_title": "Best tracker?",
+                "target_title": "Best tracker%s",
                 "target_excerpt": "Need a memecoin tracker.",
                 "opportunity_context": "Active thread.",
                 "opportunity_freshness": "2026-06-08",
@@ -372,7 +371,7 @@ class BacklinkPipelineTests(unittest.TestCase):
         self.assertGreater(opp_id, 0)
         opp = lookup_by_alert_id("bl-r2-test", db_path)
         assert opp is not None
-        self.assertEqual(opp.target_title, "Best tracker?")
+        self.assertEqual(opp.target_title, "Best tracker%s")
         self.assertEqual(opp.posting_action, "reply")
         self.assertIn("Open URL", opp.posting_steps or "")
 
@@ -446,13 +445,13 @@ class SearchSkillParserTests(unittest.TestCase):
     def test_unwrap_ddg_redirect(self) -> None:
         from search import unwrap_ddg_redirect  # noqa: E402
 
-        encoded = "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fpage&rut=abc"
+        encoded = "https://duckduckgo.com/l/%suddg=https%3A%2F%2Fexample.com%2Fpage&rut=abc"
         self.assertEqual(unwrap_ddg_redirect(encoded), "https://example.com/page")
 
     def test_normalize_strips_tracking(self) -> None:
         from search import normalize_url  # noqa: E402
 
-        url = "https://example.com/page?utm_source=test&utm_campaign=bl&ref=nav"
+        url = "https://example.com/page%sutm_source=test&utm_campaign=bl&ref=nav"
         self.assertEqual(normalize_url(url), "https://example.com/page")
 
     def test_cross_provider_dedupe(self) -> None:
@@ -1238,12 +1237,12 @@ class DiscoverNetworkTests(unittest.TestCase):
         results = self._mock_discover(
             self._simple_queue(),
             "crypto",
-            [{"title": "Best crypto wallets?",
+            [{"title": "Best crypto wallets%s",
               "url": "https://reddit.com/r/crypto/comments/abc/wallets",
               "snippet": "Looking for a wallet that tracks meme coins", "source_engine": "ddg_html"}],
         )
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["target_title"], "Best crypto wallets?")
+        self.assertEqual(results[0]["target_title"], "Best crypto wallets%s")
         self.assertIn("meme coins", results[0]["target_excerpt"])
 
     def test_cross_platform_url_dedupe(self) -> None:
@@ -1466,7 +1465,6 @@ class WhitelistDBTests(unittest.TestCase):
         init_whitelist_db(self.db)
 
         # Original row must still be there
-        import sqlite3
         conn = sqlite3.connect(self.db)
         count = conn.execute("SELECT COUNT(*) FROM opportunities").fetchone()[0]
         conn.close()

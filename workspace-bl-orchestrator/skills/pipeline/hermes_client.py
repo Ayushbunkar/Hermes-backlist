@@ -9,7 +9,6 @@ import urllib.request
 import urllib.error
 from urllib.error import URLError, HTTPError
 import config
-import sqlite3
 
 BIFROST_URL = config.BIFROST_BASE_URL
 DEFAULT_MODEL = config.DEFAULT_MODEL

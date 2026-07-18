@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS projects (
   telegram_group_id   TEXT,                       -- per-project Telegram supergroup
   telegram_group_name TEXT,
   card_prefix         TEXT,                       -- optional card label prefix
-  created_at  TEXT    DEFAULT (datetime('now'))
+  created_at  TEXT    DEFAULT (timezone('utc', now()))
 );
 
 CREATE TABLE IF NOT EXISTS whitelist_sites (
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS whitelist_sites (
   project_id            INTEGER NOT NULL REFERENCES projects(id),
   domain                TEXT    NOT NULL,
   status                TEXT    NOT NULL DEFAULT 'active',  -- active | benched | evicted | cooldown
-  added_at              TEXT    DEFAULT (datetime('now')),
+  added_at              TEXT    DEFAULT (timezone('utc', now())),
   added_by              TEXT    NOT NULL DEFAULT 'manual',  -- seed | finder | manual
   last_scanned_at       TEXT,
   current_usability_score REAL  DEFAULT NULL,
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS harvest_leads (
   status               TEXT NOT NULL DEFAULT 'NEW',  -- NEW | SCORED | GATED | REJECTED | DRAFTED | SENT | FAILED
   run_id               TEXT,
   raw_json             TEXT,
-  created_at           TEXT DEFAULT (datetime('now')),
-  updated_at           TEXT DEFAULT (datetime('now')),
+  created_at           TEXT DEFAULT (timezone('utc', now())),
+  updated_at           TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, url_key)
 );
 CREATE INDEX IF NOT EXISTS idx_lead_status ON harvest_leads(status, score_100);
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS site_score_history (
   approvals            INTEGER NOT NULL DEFAULT 0,
   rejects              INTEGER NOT NULL DEFAULT 0,
   opportunities_emitted INTEGER NOT NULL DEFAULT 0,
-  recorded_at          TEXT    DEFAULT (datetime('now'))
+  recorded_at          TEXT    DEFAULT (timezone('utc', now()))
 );
 CREATE INDEX IF NOT EXISTS idx_ssh_site ON site_score_history(whitelist_site_id, recorded_at);
 
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS seen_opportunities (
   id           INTEGER PRIMARY KEY ,
   project_id   INTEGER NOT NULL REFERENCES projects(id),
   url_key      TEXT    NOT NULL,
-  first_seen_at TEXT   DEFAULT (datetime('now')),
+  first_seen_at TEXT   DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, url_key)
 );
 CREATE INDEX IF NOT EXISTS idx_seen_project ON seen_opportunities(project_id);
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
   id           INTEGER PRIMARY KEY ,
   run_id       TEXT    NOT NULL UNIQUE,
   project_id   INTEGER REFERENCES projects(id),
-  started_at   TEXT    DEFAULT (datetime('now')),
+  started_at   TEXT    DEFAULT (timezone('utc', now())),
   finished_at  TEXT,
   status       TEXT    DEFAULT 'running',  -- running | success | failed
   summary_json TEXT
@@ -134,7 +134,7 @@ CREATE INDEX IF NOT EXISTS idx_pr_project ON pipeline_runs(project_id, started_a
 CREATE TABLE IF NOT EXISTS harvest_cursors (
   whitelist_site_id INTEGER PRIMARY KEY REFERENCES whitelist_sites(id),
   state_json        TEXT NOT NULL DEFAULT '{}',
-  updated_at        TEXT DEFAULT (datetime('now'))
+  updated_at        TEXT DEFAULT (timezone('utc', now()))
 );
 
 CREATE TABLE IF NOT EXISTS query_stats (
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS vocab_terms (
   term        TEXT NOT NULL,
   score       REAL NOT NULL DEFAULT 0,
   source      TEXT,
-  added_at    TEXT DEFAULT (datetime('now')),
+  added_at    TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, term)
 );
 CREATE INDEX IF NOT EXISTS idx_vocab_project ON vocab_terms(project_id, score DESC);
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS domain_candidates (
   domain       TEXT NOT NULL,
   source_url   TEXT,
   status       TEXT NOT NULL DEFAULT 'pending',
-  created_at   TEXT DEFAULT (datetime('now')),
+  created_at   TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, domain)
 );
 
@@ -177,8 +177,8 @@ CREATE TABLE IF NOT EXISTS onboard_sessions (
   step TEXT NOT NULL,
   answers_json TEXT NOT NULL DEFAULT '{}',
   prompt_message_id INTEGER,
-  created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT DEFAULT (datetime('now')),
+  created_at TEXT DEFAULT (timezone('utc', now())),
+  updated_at TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(chat_id, user_id)
 );
 """
@@ -254,7 +254,7 @@ def upsert_project(project_url: str, niche: str, name: str = "", db_path: str = 
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT OR IGNORE INTO projects (project_url, niche, name) VALUES (%s, %s, %s)",
+            "INSERT INTO INTO projects (project_url, niche, name) VALUES (%s, %s, %s)",
             (project_url.strip(), niche.strip(), name.strip()),
         )
         conn.commit()
@@ -288,7 +288,7 @@ def upsert_whitelist_site(
         conn.execute(
             """
             INSERT INTO whitelist_sites (project_id, domain, added_by, status, next_scan_due)
-            VALUES (%s, %s, %s, 'active', datetime('now'))
+            VALUES (%s, %s, %s, 'active', timezone('utc', now()))
             ON CONFLICT(project_id, domain) DO NOTHING
             """,
             (project_id, domain, added_by),
@@ -345,7 +345,7 @@ def touch_last_scanned(whitelist_site_id: int, db_path: str = DEFAULT_DB_PATH) -
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "UPDATE whitelist_sites SET last_scanned_at = datetime('now') WHERE id=%s",
+            "UPDATE whitelist_sites SET last_scanned_at = timezone('utc', now()) WHERE id=%s",
             (whitelist_site_id,),
         )
         conn.commit()
@@ -417,7 +417,7 @@ def mark_seen_batch(project_id: int, url_keys: list[str], db_path: str = DEFAULT
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.executemany(
-            "INSERT OR IGNORE INTO seen_opportunities (project_id, url_key) VALUES (%s, %s)",
+            "INSERT INTO INTO seen_opportunities (project_id, url_key) VALUES (%s, %s)",
             [(project_id, k) for k in url_keys],
         )
         conn.commit()
@@ -431,10 +431,10 @@ def mark_seen_editorial(project_id: int, url_key: str, db_path: str = DEFAULT_DB
         conn.execute(
             """
             INSERT INTO seen_opportunities (project_id, url_key, editorial_locked, last_activity_at)
-            VALUES (%s, %s, 1, datetime('now'))
+            VALUES (%s, %s, 1, timezone('utc', now()))
             ON CONFLICT(project_id, url_key) DO UPDATE SET
               editorial_locked = 1,
-              last_activity_at = datetime('now')
+              last_activity_at = timezone('utc', now())
             """,
             (project_id, key),
         )
@@ -449,7 +449,7 @@ def register_run(run_id: str, project_id: int | None = None, db_path: str = DEFA
     init_whitelist_db(db_path)
     with _connect(db_path) as conn:
         conn.execute(
-            "INSERT OR IGNORE INTO pipeline_runs (run_id, project_id, status) VALUES (%s, %s, 'running')",
+            "INSERT INTO INTO pipeline_runs (run_id, project_id, status) VALUES (%s, %s, 'running')",
             (run_id, project_id),
         )
         conn.commit()
@@ -465,7 +465,7 @@ def finish_run(
     summary_json = json.dumps(summary, ensure_ascii=False) if summary else None
     with _connect(db_path) as conn:
         conn.execute(
-            "UPDATE pipeline_runs SET status=%s, finished_at = datetime('now'), summary_json = %s WHERE run_id=%s",
+            "UPDATE pipeline_runs SET status=%s, finished_at = timezone('utc', now()), summary_json = %s WHERE run_id=%s",
             (status, summary_json, run_id),
         )
         conn.commit()
@@ -690,8 +690,8 @@ def get_due_sites(limit: int = 1, db_path: str = DEFAULT_DB_PATH) -> list[dict]:
             JOIN projects p ON p.id = w.project_id
             WHERE p.status = 'active'
               AND w.status IN ('active', 'cooldown')
-              AND (w.next_scan_due IS NULL OR w.next_scan_due <= datetime('now'))
-              AND (w.cooldown_until IS NULL OR w.cooldown_until <= datetime('now'))
+              AND (w.next_scan_due IS NULL OR w.next_scan_due <= timezone('utc', now()))
+              AND (w.cooldown_until IS NULL OR w.cooldown_until <= timezone('utc', now()))
             ORDER BY COALESCE(w.scan_priority, 50) DESC,
                      (w.next_scan_due IS NULL) DESC, w.next_scan_due ASC
             LIMIT %s
@@ -721,7 +721,7 @@ def mark_site_scanned_success(
         conn.execute(
             """
             UPDATE whitelist_sites
-            SET last_scanned_at = datetime('now'),
+            SET last_scanned_at = timezone('utc', now()),
                 next_scan_due   = datetime('now', %s || ' minutes'),
                 failure_count   = 0,
                 cooldown_until  = NULL,
@@ -751,7 +751,7 @@ def mark_site_blocked(
             """
             UPDATE whitelist_sites
             SET failure_count=%s,
-                last_scanned_at = datetime('now'),
+                last_scanned_at = timezone('utc', now()),
                 cooldown_until = datetime('now', %s || ' minutes'),
                 next_scan_due  = datetime('now', %s || ' minutes'),
                 status         = 'cooldown'
@@ -770,7 +770,7 @@ def set_project_sites_due_now(project_id: int, db_path: str = DEFAULT_DB_PATH) -
         cur = conn.execute(
             """
             UPDATE whitelist_sites
-            SET next_scan_due = datetime('now'), cooldown_until = NULL,
+            SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                 status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
             WHERE project_id=%s AND status IN ('active', 'cooldown')
             """,
@@ -823,9 +823,9 @@ def insert_leads(
                     conn.execute(
                         """
                         INSERT INTO seen_opportunities (project_id, url_key, last_activity_at)
-                        VALUES (%s, %s, datetime('now'))
+                        VALUES (%s, %s, timezone('utc', now()))
                         ON CONFLICT(project_id, url_key) DO UPDATE SET
-                          last_activity_at = datetime('now')
+                          last_activity_at = timezone('utc', now())
                         """,
                         (project_id, key),
                     )
@@ -864,7 +864,7 @@ def update_lead(lead_id: int, fields: dict, db_path: str = DEFAULT_DB_PATH) -> N
     params = list(fields.values())
     with _connect(db_path) as conn:
         conn.execute(
-            f"UPDATE harvest_leads SET {cols}, updated_at = datetime('now') WHERE id=%s",
+            f"UPDATE harvest_leads SET {cols}, updated_at = timezone('utc', now()) WHERE id=%s",
             (*params, lead_id),
         )
         conn.commit()
@@ -881,7 +881,7 @@ def reset_failed_leads(
     with _connect(db_path) as conn:
         cur = conn.execute(
             "UPDATE harvest_leads SET status=%s, draft_attempts = 0, run_id = NULL, "
-            "updated_at = datetime('now') WHERE project_id=%s AND status = 'FAILED'",
+            "updated_at = timezone('utc', now()) WHERE project_id=%s AND status = 'FAILED'",
             (to_status, project_id),
         )
         conn.commit()
@@ -898,7 +898,7 @@ def recover_stuck_drafted(
     with _connect(db_path) as conn:
         cur = conn.execute(
             "UPDATE harvest_leads SET status = 'GATED', run_id = NULL, "
-            "updated_at = datetime('now') "
+            "updated_at = timezone('utc', now()) "
             "WHERE status = 'DRAFTED' "
             "AND updated_at < datetime('now', %s)",
             (f"-{int(minutes)} minutes",),
@@ -974,7 +974,7 @@ def reset_all_cooldowns(project_id: int | None = None, db_path: str = DEFAULT_DB
             cur = conn.execute(
                 """
                 UPDATE whitelist_sites
-                SET next_scan_due = datetime('now'), cooldown_until = NULL,
+                SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                     failure_count = 0,
                     status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
                 WHERE project_id=%s AND status IN ('active', 'cooldown')
@@ -985,7 +985,7 @@ def reset_all_cooldowns(project_id: int | None = None, db_path: str = DEFAULT_DB
             cur = conn.execute(
                 """
                 UPDATE whitelist_sites
-                SET next_scan_due = datetime('now'), cooldown_until = NULL,
+                SET next_scan_due = timezone('utc', now()), cooldown_until = NULL,
                     failure_count = 0,
                     status = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
                 WHERE status IN ('active', 'cooldown')
@@ -1067,7 +1067,7 @@ def refresh_scan_priorities(project_id: int, db_path: str = DEFAULT_DB_PATH) -> 
             row = conn.execute(
                 """
                 SELECT COUNT(*) AS n FROM harvest_leads
-                WHERE whitelist_site_id=%s AND created_at >= datetime('now', '-7 days')
+                WHERE whitelist_site_id=%s AND created_at >= NOW() AT TIME ZONE 'UTC' + INTERVAL '-7 days'
                 """,
                 (wl_id,),
             ).fetchone()
@@ -1126,10 +1126,10 @@ def set_harvest_cursor(whitelist_site_id: int, state: dict, db_path: str = DEFAU
         conn.execute(
             """
             INSERT INTO harvest_cursors (whitelist_site_id, state_json, updated_at)
-            VALUES (%s, %s, datetime('now'))
+            VALUES (%s, %s, timezone('utc', now()))
             ON CONFLICT(whitelist_site_id) DO UPDATE SET
               state_json = excluded.state_json,
-              updated_at = datetime('now')
+              updated_at = timezone('utc', now())
             """,
             (whitelist_site_id, json.dumps(state, ensure_ascii=False)),
         )
@@ -1152,11 +1152,11 @@ def record_query_stats(
             conn.execute(
                 """
                 INSERT INTO query_stats (project_id, domain, template_id, runs, new_leads, last_used)
-                VALUES (%s, %s, %s, 1, %s, datetime('now'))
+                VALUES (%s, %s, %s, 1, %s, timezone('utc', now()))
                 ON CONFLICT(project_id, domain, template_id) DO UPDATE SET
                   runs = runs + 1,
                   new_leads = new_leads + excluded.new_leads,
-                  last_used = datetime('now')
+                  last_used = timezone('utc', now())
                 """,
                 (project_id, dom, tid, int(new_count)),
             )
@@ -1229,7 +1229,7 @@ def revive_lead(project_id: int, url_key: str, db_path: str = DEFAULT_DB_PATH) -
         cur = conn.execute(
             """
             UPDATE harvest_leads SET status = 'NEW', run_id = NULL, draft_attempts = 0,
-              updated_at = datetime('now')
+              updated_at = timezone('utc', now())
             WHERE project_id=%s AND url_key=%s AND status IN ('SENT', 'REJECTED', 'GATED', 'SCORED', 'FAILED')
             """,
             (project_id, key),
@@ -1276,7 +1276,7 @@ def queue_domain_candidate(
     with _connect(db_path) as conn:
         cur = conn.execute(
             """
-            INSERT OR IGNORE INTO domain_candidates (project_id, domain, source_url)
+            INSERT INTO INTO domain_candidates (project_id, domain, source_url)
             VALUES (%s, %s, %s)
             """,
             (project_id, dom, source_url),
@@ -1374,12 +1374,12 @@ def upsert_onboard_session(
         conn.execute(
             """
             INSERT INTO onboard_sessions (chat_id, user_id, step, answers_json, prompt_message_id, updated_at)
-            VALUES (%s, %s, %s, %s, %s, datetime('now'))
+            VALUES (%s, %s, %s, %s, %s, timezone('utc', now()))
             ON CONFLICT(chat_id, user_id) DO UPDATE SET
               step = excluded.step,
               answers_json = excluded.answers_json,
               prompt_message_id = excluded.prompt_message_id,
-              updated_at = datetime('now')
+              updated_at = timezone('utc', now())
             """,
             (str(chat_id), str(user_id), step, answers_json, prompt_message_id),
         )

@@ -44,7 +44,7 @@ def mine_project_vocab(
         rows = conn.execute(
             """
             SELECT target_title, target_excerpt FROM harvest_leads
-            WHERE project_id = ? AND created_at >= datetime('now', ? || ' hours')
+            WHERE project_id = %s AND created_at >= NOW() AT TIME ZONE 'UTC' + CAST(%s || '  hours' AS INTERVAL)
             """,
             (project_id, f"-{hours}"),
         ).fetchall()
@@ -52,7 +52,7 @@ def mine_project_vocab(
             """
             SELECT o.site_url, o.target_title, o.target_excerpt FROM opportunities o
             JOIN projects p ON p.id = o.project_id
-            WHERE p.id = ? AND o.status = 'approved'
+            WHERE p.id = %s AND o.status = 'approved'
             LIMIT 50
             """,
             (project_id,),

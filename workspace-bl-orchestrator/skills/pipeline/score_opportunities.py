@@ -60,7 +60,7 @@ from whitelist_db import (
 )
 
 # Regexes for parsing freshness strings like "~2 hours ago", "~3 days ago"
-_AGO_RE = re.compile(r"(\d+)\s*(second|minute|hour|day|week|month|year)s?\s*ago", re.I)
+_AGO_RE = re.compile(r"(\d+)\s*(second|minute|hour|day|week|month|year)s%s\s*ago", re.I)
 
 
 def _parse_recency_hours(freshness_str: str) -> float | None:
@@ -186,12 +186,12 @@ def compute_site_usability(
     approve_rate = total_approvals / max(total_approvals + total_rejects, 1)
     delivery_rate = min(total_emitted / max(scan_count * 5, 1), 1.0)  # cap at 1; 5 opps/scan is "full"
 
-    # freshness: was the site scanned recently?
+    # freshness: was the site scanned recently%s
     with _connect(db_path) as conn:
         row = conn.execute(
             """
             SELECT julianday('now') - julianday(last_scanned_at) AS days_since
-            FROM whitelist_sites WHERE id = ?
+            FROM whitelist_sites WHERE id = %s
             """,
             (whitelist_site_id,),
         ).fetchone()

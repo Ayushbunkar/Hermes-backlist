@@ -9,7 +9,6 @@ except ImportError:
     pass
 
 import config
-import sqlite3
 BOT_TOKEN = config.TELEGRAM_BOT_TOKEN
 
 logger = logging.getLogger("telegram_router")
@@ -32,7 +31,7 @@ async def onboard_command(update, context):
     conn.commit()
     conn.close()
     
-    await update.message.reply_text("Welcome to Hermes Onboarding! What is your project URL?")
+    await update.message.reply_text("Welcome to Hermes Onboarding! What is your project URL%s")
 
 async def handle_message(update, context):
     """Handles text messages for state progression."""
@@ -146,7 +145,7 @@ async def handle_document(update, context):
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         keyboard = [[InlineKeyboardButton("Confirm PDF Project", callback_data=f"confirm_{project_url}")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(f"PDF '{doc.file_name}' read successfully ({len(text)} characters). Shall we proceed?", reply_markup=reply_markup)
+        await update.message.reply_text(f"PDF '{doc.file_name}' read successfully ({len(text)} characters). Shall we proceed%s", reply_markup=reply_markup)
     else:
         conn.close()
         file_id = update.message.document.file_id

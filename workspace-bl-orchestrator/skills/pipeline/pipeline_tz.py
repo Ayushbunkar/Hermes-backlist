@@ -73,7 +73,7 @@ def format_sqlite_display(ts: str | None) -> str:
 
 
 def format_utc_sqlite_display(ts: str | None) -> str | None:
-    """Display SQLite UTC datetime('now') values in IST (whitelist scheduling)."""
+    """Display SQLite UTC timezone('utc', now()) values in IST (whitelist scheduling)."""
     if not ts or not str(ts).strip():
         return None
     raw = str(ts).strip()
