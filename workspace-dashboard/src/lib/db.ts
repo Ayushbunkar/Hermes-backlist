@@ -4,6 +4,8 @@ import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
+import os from 'os';
+
 let dbUrl = process.env.DATABASE_URL;
 
 if (!dbUrl) {
@@ -12,7 +14,9 @@ if (!dbUrl) {
     path.resolve(process.cwd(), 'workspace-dashboard', '.env.local'),
     path.resolve(process.cwd(), '.env'),
     path.resolve(process.cwd(), '../.env.local'),
-    path.resolve(process.cwd(), '../.env')
+    path.resolve(process.cwd(), '../.env'),
+    path.resolve(os.homedir(), '.openclaw-backlink', '.env'),
+    path.resolve(os.homedir(), '.openclaw-backlink', '.env.local')
   ];
 
   for (const p of possiblePaths) {
