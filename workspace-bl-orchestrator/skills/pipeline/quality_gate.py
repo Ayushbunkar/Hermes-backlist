@@ -115,16 +115,6 @@ def _parse_scores(content: str, n: int) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for item in obj.get("scores", []):
         try:
-            idx = int(item["i"])
-        except (KeyError, ValueError, TypeError):
-            continue
-        if 0 <= idx < n:
-            try:
-                score = float(item.get("score"))
-            except (TypeError, ValueError):
-                continue
-            out[idx] = {
-                "score": max(0.0, min(10.0, score)),
             res_idx = int(item.get("i", -1))
             score = float(item.get("score", 0.0))
             reason = str(item.get("reason") or "").strip()
