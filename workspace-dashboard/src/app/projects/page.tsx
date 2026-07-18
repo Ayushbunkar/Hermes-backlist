@@ -11,6 +11,9 @@ export default function ProjectsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
+  const [activeProject, setActiveProject] = useState<number | null>(null);
+  const [sourceDomain, setSourceDomain] = useState('');
+  const [addingSource, setAddingSource] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -56,6 +59,28 @@ export default function ProjectsPage() {
       setError(e.message);
     }
     setAdding(false);
+  };
+
+  const handleAddSource = async (e: React.FormEvent, projectId: number) => {
+    e.preventDefault();
+    if (!sourceDomain) return;
+    
+    setAddingSource(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/sources`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: sourceDomain, site_type: 'forum' })
+      });
+      if (res.ok) {
+        setSourceDomain('');
+        setActiveProject(null);
+        fetchProjects();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setAddingSource(false);
   };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -162,6 +187,51 @@ export default function ProjectsPage() {
                               </div>
                             </div>
                           )}
+                          
+                          {/* Sources UI */}
+                          <div className="mt-4 pt-3 border-t border-gray-800">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Data Sources (Whitelist)</span>
+                              <button 
+                                onClick={() => setActiveProject(activeProject === proj.id ? null : proj.id)}
+                                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                              >
+                                <Plus size={12} /> Add Source
+                              </button>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2">
+                              {proj.sources?.length > 0 ? (
+                                proj.sources.map((src: any) => (
+                                  <span key={src.id} className="bg-gray-800/50 text-gray-300 text-xs px-2 py-1 rounded border border-gray-700/50">
+                                    {src.domain}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-gray-600 italic">No sources added yet.</span>
+                              )}
+                            </div>
+                            
+                            {activeProject === proj.id && (
+                              <form onSubmit={(e) => handleAddSource(e, proj.id)} className="mt-3 flex gap-2">
+                                <input 
+                                  type="text" 
+                                  placeholder="e.g. reddit.com/r/SaaS" 
+                                  value={sourceDomain}
+                                  onChange={(e) => setSourceDomain(e.target.value)}
+                                  className="flex-1 bg-gray-950 border border-gray-700 text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:border-blue-500"
+                                  required
+                                />
+                                <button 
+                                  type="submit" 
+                                  disabled={addingSource}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                  {addingSource ? 'Adding...' : 'Save'}
+                                </button>
+                              </form>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 align-top">
                           <span className="bg-gray-800 px-3 py-1 rounded-full text-xs text-blue-400 border border-gray-700 inline-block mt-1">

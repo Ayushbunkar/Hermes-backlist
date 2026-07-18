@@ -10,7 +10,21 @@ export async function GET() {
 
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT id, project_url, niche, config_json, created_at, status FROM projects ORDER BY created_at DESC');
+    const result = await client.query(`
+      SELECT 
+        p.id, p.project_url, p.niche, p.config_json, p.created_at, p.status,
+        COALESCE(
+          json_agg(
+            json_build_object('id', w.id, 'domain', w.domain, 'site_type', w.site_type)
+          ) FILTER (WHERE w.id IS NOT NULL),
+          '[]'
+        ) as sources
+      FROM projects p
+      LEFT JOIN project_whitelist pw ON p.id = pw.project_id
+      LEFT JOIN whitelist_sites w ON pw.site_id = w.id
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `);
     client.release();
     
     return NextResponse.json({ data: result.rows });
