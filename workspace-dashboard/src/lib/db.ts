@@ -23,7 +23,7 @@ if (!dbUrl) {
     try {
       if (fs.existsSync(p)) {
         const envFile = fs.readFileSync(p, 'utf8');
-        const match = envFile.match(/^DATABASE_URL=(.*)$/m);
+        const match = envFile.match(/^(?:DATABASE_URL|SUPABASE_CONNECTION_STRING)=(.*)$/m);
         if (match) {
           dbUrl = match[1].trim().replace(/['"]/g, '');
           console.log(`[DB] Found DATABASE_URL in ${p}`);
