@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import time
+import requests
 from urllib.parse import urlparse
 
 # Open-web discovery: skip search engines and low-value hosts.
@@ -64,16 +65,7 @@ def _ddg_timeout() -> float:
 
 
 def _load_ddgs():
-    try:
-        from ddgs import DDGS  # type: ignore[import-untyped]
-        return DDGS
-    except Exception:
-        pass
-    try:
-        from duckduckgo_search import DDGS  # type: ignore[import-untyped]
-        return DDGS
-    except Exception:
-        return None
+    return None
 
 
 def _domain(url: str) -> str:
@@ -120,65 +112,37 @@ def _priority_index(domain: str, order: list[str]) -> int:
     return len(order) + 1
 
 
-def _raw_search(ddgs_cls, query: str, max_results: int, timelimit: str | None) -> list[dict]:
-    backends = _ddg_backends()
-    retries = _ddg_retries()
-    timeout = _ddg_timeout()
-    last_err: Exception | None = None
-    for backend in backends:
-        for attempt in range(retries):
-            try:
-                with ddgs_cls(timeout=timeout) as ddgs:
-                    try:
-                        results = list(ddgs.text(
-                            query,
-                            region="us-en",
-                            safesearch="off",
-                            timelimit=timelimit,
-                            backend=backend,
-                            max_results=max_results,
-                        ))
-                    except TypeError:
-                        results = list(ddgs.text(
-                            query,
-                            region="us-en",
-                            safesearch="off",
-                            timelimit=timelimit,
-                            max_results=max_results,
-                        ))
-                if results:
-                    return results
-            except TypeError:
-                try:
-                    with ddgs_cls() as ddgs:
-                        try:
-                            results = list(ddgs.text(
-                                query,
-                                region="us-en",
-                                safesearch="off",
-                                timelimit=timelimit,
-                                backend=backend,
-                                max_results=max_results,
-                            ))
-                        except TypeError:
-                            results = list(ddgs.text(
-                                query,
-                                region="us-en",
-                                safesearch="off",
-                                timelimit=timelimit,
-                                max_results=max_results,
-                            ))
-                    if results:
-                        return results
-                except Exception as e:
-                    last_err = e
-                    time.sleep(RETRY_BACKOFF_S * (attempt + 1))
-            except Exception as e:
-                last_err = e
-                time.sleep(RETRY_BACKOFF_S * (attempt + 1))
-    if last_err:
-        print(f"[search_tool] all backends failed: {last_err}", file=sys.stderr)
-    return []
+def _raw_search(query: str, max_results: int, timelimit: str | None) -> list[dict]:
+    api_key = os.environ.get("TAVILY_API_KEY", "").strip()
+    if not api_key:
+        print("[search_tool] TAVILY_API_KEY missing, fallback to empty", file=sys.stderr)
+        return []
+        
+    try:
+        resp = requests.post(
+            "https://api.tavily.com/search",
+            json={
+                "api_key": api_key,
+                "query": query,
+                "search_depth": "basic",
+                "max_results": max_results,
+            },
+            timeout=20
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        
+        raw = []
+        for r in data.get("results", []):
+            raw.append({
+                "url": r.get("url"),
+                "title": r.get("title"),
+                "snippet": r.get("content")
+            })
+        return raw
+    except Exception as e:
+        print(f"[search_tool] Tavily search failed: {e}", file=sys.stderr)
+        return []
 
 
 def _load_priority_order() -> list[str]:
@@ -198,13 +162,9 @@ def search(
     dedupe_by_domain: bool = False,
 ) -> list[dict]:
     """Return [{title, url, snippet, domain}] or [] on failure."""
-    ddgs_cls = _load_ddgs()
-    if ddgs_cls is None:
-        print("SEARCH_EMPTY: ddgs library not importable", file=sys.stderr)
-        return []
     m = _infer_mode(query, mode)
     skip = _skip_domains(m)
-    raw = _raw_search(ddgs_cls, query, max_results * 3, timelimit)
+    raw = _raw_search(query, max_results * 3, timelimit)
     seen: set[str] = set()
     out: list[dict] = []
     for item in raw:
