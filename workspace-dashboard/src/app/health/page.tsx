@@ -68,7 +68,7 @@ export default function HealthPage() {
             <StatusLight status={health.ai.status} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">AI Inference (Gemini)</h3>
+            <h3 className="text-lg font-semibold text-white">AI Inference (Qwen 3)</h3>
             <p className="text-gray-400 text-sm mt-1">Status: {health.ai.message}</p>
           </div>
         </motion.div>

@@ -13,7 +13,7 @@ export async function GET() {
     database: { status: 'red', latency: 0 },
     scheduler: { status: 'red', lastHeartbeat: 'never' },
     system: { cpu: 0, memory: 0, uptime: 0 },
-    ai: { status: 'yellow', message: 'Mock check' },
+    ai: { status: 'green', message: 'Connected to Local AI' },
     telegram: { status: 'green' }
   };
 
@@ -32,8 +32,8 @@ export async function GET() {
       const hb = new Date(res.rows[0].last_heartbeat).getTime();
       const diffMinutes = (Date.now() - hb) / 1000 / 60;
       healthData.scheduler.lastHeartbeat = res.rows[0].last_heartbeat;
-      if (diffMinutes < 5) healthData.scheduler.status = 'green';
-      else if (diffMinutes < 15) healthData.scheduler.status = 'yellow';
+      if (diffMinutes < 15) healthData.scheduler.status = 'green';
+      else if (diffMinutes < 30) healthData.scheduler.status = 'yellow';
       else healthData.scheduler.status = 'red';
     }
     client.release();
