@@ -213,23 +213,31 @@ export default function ProjectsPage() {
                             </div>
                             
                             {activeProject === proj.id && (
-                              <form onSubmit={(e) => handleAddSource(e, proj.id)} className="mt-3 flex gap-2">
-                                <input 
-                                  type="text" 
-                                  placeholder="e.g. reddit.com/r/SaaS" 
-                                  value={sourceDomain}
-                                  onChange={(e) => setSourceDomain(e.target.value)}
-                                  className="flex-1 bg-gray-950 border border-gray-700 text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:border-blue-500"
-                                  required
-                                />
-                                <button 
-                                  type="submit" 
-                                  disabled={addingSource}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                  {addingSource ? 'Adding...' : 'Save'}
-                                </button>
-                              </form>
+                              <div className="mt-3">
+                                <div className="flex gap-2 mb-2">
+                                  <span className="text-xs text-gray-500 flex items-center">Quick Add:</span>
+                                  <button onClick={() => setSourceDomain('reddit.com/r/SaaS')} className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2 py-0.5 rounded transition-colors">Reddit /r/SaaS</button>
+                                  <button onClick={() => setSourceDomain('news.ycombinator.com')} className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2 py-0.5 rounded transition-colors">HackerNews</button>
+                                  <button onClick={() => setSourceDomain('indiehackers.com')} className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2 py-0.5 rounded transition-colors">IndieHackers</button>
+                                </div>
+                                <form onSubmit={(e) => handleAddSource(e, proj.id)} className="flex gap-2">
+                                  <input 
+                                    type="text" 
+                                    placeholder="e.g. reddit.com/r/SaaS" 
+                                    value={sourceDomain}
+                                    onChange={(e) => setSourceDomain(e.target.value)}
+                                    className="flex-1 bg-gray-950 border border-gray-700 text-white text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:border-blue-500"
+                                    required
+                                  />
+                                  <button 
+                                    type="submit" 
+                                    disabled={addingSource}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                                  >
+                                    {addingSource ? 'Adding...' : 'Save'}
+                                  </button>
+                                </form>
+                              </div>
                             )}
                           </div>
                         </td>

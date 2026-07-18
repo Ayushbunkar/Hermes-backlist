@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession();
   if (!session) {
@@ -13,7 +13,8 @@ export async function POST(
 
   try {
     const { domain, site_type = 'forum', scan_priority = 10 } = await request.json();
-    const projectId = params.id;
+    const resolvedParams = await params;
+    const projectId = resolvedParams.id;
 
     if (!domain) {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
