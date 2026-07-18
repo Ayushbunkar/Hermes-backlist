@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
 export async function GET(request: Request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '50');
-  const offset = parseInt(searchParams.get('offset') || '0');
   
   try {
     const client = await pool.connect();
     const result = await client.query(
-      'SELECT * FROM notifications ORDER BY created_at DESC LIMIT  OFFSET ',
-      [limit, offset]
+      'SELECT * FROM notifications WHERE user_id = \ ORDER BY created_at DESC LIMIT \',
+      [session.id, limit]
     );
     client.release();
     return NextResponse.json({ notifications: result.rows });
@@ -21,10 +24,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await request.json();
     if (body.action === 'mark_read' && body.id) {
       const client = await pool.connect();
-      await client.query('UPDATE notifications SET is_read = 1 WHERE id = ', [body.id]);
+      await client.query('UPDATE notifications SET is_read = 1 WHERE id = \ AND user_id = \', [body.id, session.id]);
       client.release();
       return NextResponse.json({ success: true });
     }

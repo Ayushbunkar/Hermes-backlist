@@ -1,62 +1,67 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM system_settings WHERE id = 1');
+    const result = await client.query('SELECT * FROM system_settings WHERE user_id = \', [session.id]);
     client.release();
-    
+
     if (result.rows.length === 0) {
-      return NextResponse.json({ error: 'Settings not initialized' }, { status: 404 });
+      return NextResponse.json({ error: 'Settings not found' }, { status: 404 });
     }
-    
+
     const row = result.rows[0];
     return NextResponse.json({
       min_score: row.min_score,
-      platforms: JSON.parse(row.platforms || '[]'),
-      reminder_intervals_hours: JSON.parse(row.reminder_intervals_hours || '{}'),
-      ai_model: row.ai_model,
       schedule_frequency_minutes: row.schedule_frequency_minutes,
-      telegram_formatting: row.telegram_formatting,
-      business_thresholds: JSON.parse(row.business_thresholds || '{}'),
-      learning_enabled: Boolean(row.learning_enabled)
+      learning_enabled: row.learning_enabled === 1,
+      platforms: typeof row.platforms === 'string' ? JSON.parse(row.platforms) : row.platforms,
+      reminder_intervals_hours: typeof row.reminder_intervals_hours === 'string' ? JSON.parse(row.reminder_intervals_hours) : row.reminder_intervals_hours,
+      ai_model: row.ai_model,
+      last_heartbeat: row.last_heartbeat
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json();
     const client = await pool.connect();
-    
-    // In a real app we'd validate the body schema here
-    const updateQuery = 
-      UPDATE system_settings SET
-        min_score = ,
-        platforms = ,
-        reminder_intervals_hours = ,
-        ai_model = ,
-        schedule_frequency_minutes = ,
-        telegram_formatting = ,
-        business_thresholds = ,
-        learning_enabled = 
-      WHERE id = 1
-    ;
-    
-    await client.query(updateQuery, [
-      body.min_score,
-      JSON.stringify(body.platforms),
-      JSON.stringify(body.reminder_intervals_hours),
-      body.ai_model,
-      body.schedule_frequency_minutes,
-      body.telegram_formatting,
-      JSON.stringify(body.business_thresholds),
-      body.learning_enabled ? 1 : 0
-    ]);
-    
+
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [k, v] of Object.entries(body)) {
+      if (['min_score', 'schedule_frequency_minutes', 'learning_enabled', 'ai_model'].includes(k)) {
+        updates.push(\ = \$\);
+        values.push(k === 'learning_enabled' ? (v ? 1 : 0) : v);
+        idx++;
+      } else if (['platforms', 'reminder_intervals_hours', 'business_thresholds'].includes(k)) {
+        updates.push(\ = \$\);
+        values.push(JSON.stringify(v));
+        idx++;
+      }
+    }
+
+    if (updates.length > 0) {
+      values.push(session.id);
+      await client.query(
+        UPDATE system_settings SET \ WHERE user_id = \$\,
+        values
+      );
+    }
+
     client.release();
     return NextResponse.json({ success: true });
   } catch (err: any) {

@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import os
 import config
-import sqlite3
+import psycopg2
+import psycopg2.extras
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -15,7 +17,7 @@ DEFAULT_DB_PATH = os.path.expanduser("~/.openclaw-backlink/data/backlink.db")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS opportunities (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY ,
   run_id TEXT NOT NULL,
   alert_id TEXT NOT NULL,
   niche TEXT,
@@ -61,7 +63,7 @@ CREATE INDEX IF NOT EXISTS idx_bl_run ON opportunities(run_id);
 CREATE INDEX IF NOT EXISTS idx_bl_alert ON opportunities(alert_id);
 
 CREATE TABLE IF NOT EXISTS feedback_events (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY ,
   opportunity_id INTEGER NOT NULL REFERENCES opportunities(id),
   event_type TEXT NOT NULL,
   user_id TEXT,
@@ -74,7 +76,7 @@ CREATE TABLE IF NOT EXISTS feedback_events (
 CREATE INDEX IF NOT EXISTS idx_bl_feedback ON feedback_events(opportunity_id, event_type);
 
 CREATE TABLE IF NOT EXISTS content_versions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY ,
   opportunity_id INTEGER NOT NULL REFERENCES opportunities(id),
   version_type TEXT NOT NULL,
   content_md TEXT NOT NULL,
@@ -85,7 +87,7 @@ CREATE TABLE IF NOT EXISTS content_versions (
 CREATE INDEX IF NOT EXISTS idx_bl_versions ON content_versions(opportunity_id, version_type);
 
 CREATE TABLE IF NOT EXISTS edit_sessions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY ,
   opportunity_id INTEGER NOT NULL REFERENCES opportunities(id),
   user_id TEXT NOT NULL,
   state TEXT NOT NULL,
@@ -107,7 +109,7 @@ CREATE TABLE IF NOT EXISTS system_settings (
   last_heartbeat TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS notifications (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY ,
   type TEXT NOT NULL,
   title TEXT NOT NULL,
   message TEXT NOT NULL,
@@ -182,10 +184,15 @@ class ContentVersion:
     user_username: str | None
 
 
-def _connect(db_path: str) -> sqlite3.Connection:
+def _connect(db_path: str = None):
+    conn = psycopg2.connect(
+        os.environ.get("DATABASE_URL", "postgresql://postgres.mcbuijwyxmanqjjcanme:ayushbunkar100@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres%spgbouncer=true")
+    )
+    conn.autocommit = False
+    return conn
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
     conn = config.get_db_connection()
-    conn.row_factory = sqlite3.Row
+    conn.row_factory = psycopg2.extras.DictRow
     return conn
 
 
@@ -217,27 +224,27 @@ def utc_now_sqlite() -> str:
     return now_sqlite()
 
 
-def _ensure_columns(conn: sqlite3.Connection) -> None:
-    existing = {row["name"] for row in conn.execute("PRAGMA table_info(opportunities)")}
+def _ensure_columns(conn: psycopg2.extensions.connection) -> None:
+    existing = {row["name"] for row in conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("PRAGMA table_info(opportunities)")}
     for column, ddl in _OPPORTUNITY_MIGRATIONS.items():
         if column not in existing:
-            conn.execute(ddl)
+            conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(ddl)
 
 
 def init_db(db_path: str = DEFAULT_DB_PATH) -> None:
     with _connect(db_path) as conn:
-        conn.executescript(_SCHEMA)
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).executescript(_SCHEMA)
         _ensure_columns(conn)
         # Ensure default settings row exists
-        conn.execute("INSERT OR IGNORE INTO system_settings (id) VALUES (1)")
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("INSERT OR IGNORE INTO system_settings (id) VALUES (1)")
         conn.commit()
 
 
-def _row_get(row: sqlite3.Row, key: str, default=None):
+def _row_get(row: psycopg2.extras.DictRow, key: str, default=None):
     return row[key] if key in row.keys() else default
 
 
-def _row_to_opportunity(row: sqlite3.Row) -> Opportunity:
+def _row_to_opportunity(row: psycopg2.extras.DictRow) -> Opportunity:
     return Opportunity(
         id=row["id"],
         run_id=row["run_id"],
@@ -292,7 +299,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
         posting_steps = str(posting_steps)
 
     with _connect(db_path) as conn:
-        conn.execute(
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             INSERT INTO opportunities (
               run_id, alert_id, niche, project_url, project_name,
@@ -304,7 +311,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
               score_100, rank, score_breakdown, confidence, reasoning, business_impact,
               last_reminder, reminder_count, pending_since
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 run_id,
@@ -350,29 +357,39 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
             ),
         )
         conn.commit()
-        row = conn.execute("SELECT last_insert_rowid()").fetchone()
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("SELECT last_insert_rowid()").fetchone()
         return int(row[0])
 
 
 def set_status(opportunity_id: int, status: str, db_path: str = DEFAULT_DB_PATH) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute("UPDATE opportunities SET status=? WHERE id=?", (status, opportunity_id))
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("UPDATE opportunities SET status=%s WHERE id=%s", (status, opportunity_id))
         conn.commit()
 
 
 def prune_old_archives(days: int = 30, db_path: str = DEFAULT_DB_PATH) -> int:
     with _connect(db_path) as conn:
         cutoff = hours_ago_sqlite(days * 24)
-        c = conn.execute("DELETE FROM opportunities WHERE status = 'archived' AND card_sent_at < ?", (cutoff,))
+        c = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("DELETE FROM opportunities WHERE status = 'archived' AND card_sent_at < %s", (cutoff,))
         conn.commit()
         return c.rowcount
 
-def get_settings(db_path: str = DEFAULT_DB_PATH) -> dict[str, Any]:
+def get_settings(user_id: int = 1, db_path: str = None) -> dict[str, Any]:
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT * FROM system_settings WHERE id = 1").fetchone()
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("SELECT * FROM system_settings WHERE user_id = %s", (user_id,))
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).fetchone()
         if not row:
-            return {}
+            return {
+                "min_score": 80,
+                "platforms": ["reddit", "news"],
+                "reminder_intervals_hours": {"standard": 48, "strong": 72, "archive": 168},
+                "ai_model": "vertex/gemini-3.1-flash-lite",
+                "schedule_frequency_minutes": 60,
+                "telegram_formatting": "",
+                "business_thresholds": {},
+                "learning_enabled": True
+            }
         import json
         return {
             "min_score": row["min_score"],
@@ -385,7 +402,7 @@ def get_settings(db_path: str = DEFAULT_DB_PATH) -> dict[str, Any]:
             "learning_enabled": bool(row["learning_enabled"])
         }
 
-def update_settings(updates: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> None:
+def update_settings(user_id: int, updates: dict[str, Any], db_path: str = None) -> None:
     import json
     with _connect(db_path) as conn:
         fields = []
@@ -395,39 +412,40 @@ def update_settings(updates: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
                 v = json.dumps(v)
             if k == "learning_enabled":
                 v = 1 if v else 0
-            fields.append(f"{k} = ?")
+            fields.append(f"{k} = %s")
             values.append(v)
         
         if fields:
-            query = f"UPDATE system_settings SET {', '.join(fields)} WHERE id = 1"
-            conn.execute(query, tuple(values))
+            query = f"UPDATE system_settings SET {', '.join(fields)} WHERE user_id = %s"
+            values.append(user_id)
+            conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(query, tuple(values))
             conn.commit()
 
-def update_heartbeat(db_path: str = DEFAULT_DB_PATH) -> None:
+def update_heartbeat(db_path: str = None) -> None:
     with _connect(db_path) as conn:
-        conn.execute("UPDATE system_settings SET last_heartbeat = datetime('now') WHERE id = 1")
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("UPDATE system_settings SET last_heartbeat = CURRENT_TIMESTAMP")
         conn.commit()
 
 
 def add_notification(type: str, title: str, message: str, db_path: str = DEFAULT_DB_PATH) -> None:
     with _connect(db_path) as conn:
-        conn.execute(
-            "INSERT INTO notifications (type, title, message) VALUES (?, ?, ?)",
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "INSERT INTO notifications (type, title, message) VALUES (%s, %s, %s)",
             (type, title, message)
         )
         conn.commit()
 
 def get_notifications(limit: int = 50, offset: int = 0, db_path: str = DEFAULT_DB_PATH) -> list[dict[str, Any]]:
     with _connect(db_path) as conn:
-        rows = conn.execute(
-            "SELECT * FROM notifications ORDER BY created_at DESC LIMIT ? OFFSET ?", 
+        rows = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM notifications ORDER BY created_at DESC LIMIT %s OFFSET %s", 
             (limit, offset)
         ).fetchall()
         return [dict(r) for r in rows]
 
 def mark_notification_read(notif_id: int, db_path: str = DEFAULT_DB_PATH) -> None:
     with _connect(db_path) as conn:
-        conn.execute("UPDATE notifications SET is_read = 1 WHERE id = ?", (notif_id,))
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("UPDATE notifications SET is_read = 1 WHERE id = %s", (notif_id,))
         conn.commit()
 
 
@@ -436,8 +454,8 @@ def lookup_by_message_id(
 ) -> Opportunity | None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM opportunities WHERE telegram_group=? AND telegram_message_id=? ORDER BY id DESC LIMIT 1",
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM opportunities WHERE telegram_group=%s AND telegram_message_id=%s ORDER BY id DESC LIMIT 1",
             (str(telegram_group), int(message_id)),
         ).fetchone()
     return _row_to_opportunity(row) if row else None
@@ -446,8 +464,8 @@ def lookup_by_message_id(
 def lookup_by_run_id(run_id: str, db_path: str = DEFAULT_DB_PATH) -> Opportunity | None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM opportunities WHERE run_id=? ORDER BY id DESC LIMIT 1",
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM opportunities WHERE run_id=%s ORDER BY id DESC LIMIT 1",
             (run_id.strip(),),
         ).fetchone()
     return _row_to_opportunity(row) if row else None
@@ -459,7 +477,7 @@ def lookup_by_alert_id(alert_id: str, db_path: str = DEFAULT_DB_PATH) -> Opportu
     if not aid.startswith("bl-"):
         aid = f"bl-{aid}"
     with _connect(db_path) as conn:
-        row = conn.execute("SELECT * FROM opportunities WHERE alert_id=?", (aid,)).fetchone()
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("SELECT * FROM opportunities WHERE alert_id=%s", (aid,)).fetchone()
     return _row_to_opportunity(row) if row else None
 
 
@@ -478,11 +496,11 @@ def record_feedback(
         raise ValueError(f"invalid event_type: {event_type}")
     init_db(db_path)
     with _connect(db_path) as conn:
-        cur = conn.execute(
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             INSERT INTO feedback_events (
               opportunity_id, event_type, user_id, user_username, source, raw_payload, edited_content
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (opportunity_id, event_type, user_id, user_username, source, raw_payload, edited_content),
         )
@@ -503,11 +521,11 @@ def save_content_version(
         raise ValueError(f"invalid version_type: {version_type}")
     init_db(db_path)
     with _connect(db_path) as conn:
-        cur = conn.execute(
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             INSERT INTO content_versions (
               opportunity_id, version_type, content_md, user_id, user_username
-            ) VALUES (?, ?, ?, ?, ?)
+            ) VALUES (%s, %s, %s, %s, %s)
             """,
             (opportunity_id, version_type, content_md, user_id, user_username),
         )
@@ -520,8 +538,8 @@ def get_latest_version(
 ) -> ContentVersion | None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM content_versions WHERE opportunity_id=? AND version_type=? ORDER BY id DESC LIMIT 1",
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM content_versions WHERE opportunity_id=%s AND version_type=%s ORDER BY id DESC LIMIT 1",
             (opportunity_id, version_type),
         ).fetchone()
     if not row:
@@ -547,11 +565,11 @@ def upsert_edit_session(
 ) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute(
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             INSERT INTO edit_sessions (
               opportunity_id, user_id, state, prompt_message_id, suggested_version_id
-            ) VALUES (?, ?, ?, ?, ?)
+            ) VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT(opportunity_id, user_id) DO UPDATE SET
               state = excluded.state,
               prompt_message_id = excluded.prompt_message_id,
@@ -567,8 +585,8 @@ def get_edit_session_by_prompt(
 ) -> tuple[EditSession, Opportunity] | None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM edit_sessions WHERE prompt_message_id=? ORDER BY id DESC LIMIT 1",
+        row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM edit_sessions WHERE prompt_message_id=%s ORDER BY id DESC LIMIT 1",
             (int(prompt_message_id),),
         ).fetchone()
         if not row:
@@ -581,8 +599,8 @@ def get_edit_session_by_prompt(
             prompt_message_id=row["prompt_message_id"],
             suggested_version_id=row["suggested_version_id"],
         )
-        opp_row = conn.execute(
-            "SELECT * FROM opportunities WHERE id=?", (session.opportunity_id,)
+        opp_row = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "SELECT * FROM opportunities WHERE id=%s", (session.opportunity_id,)
         ).fetchone()
     return (session, _row_to_opportunity(opp_row)) if opp_row else None
 
@@ -590,8 +608,8 @@ def get_edit_session_by_prompt(
 def clear_edit_session(opportunity_id: int, user_id: str, db_path: str = DEFAULT_DB_PATH) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute(
-            "DELETE FROM edit_sessions WHERE opportunity_id=? AND user_id=?",
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+            "DELETE FROM edit_sessions WHERE opportunity_id=%s AND user_id=%s",
             (opportunity_id, user_id),
         )
         conn.commit()
@@ -600,7 +618,7 @@ def clear_edit_session(opportunity_id: int, user_id: str, db_path: str = DEFAULT
 def clear_all_edit_sessions(opportunity_id: int, db_path: str = DEFAULT_DB_PATH) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute("DELETE FROM edit_sessions WHERE opportunity_id=?", (opportunity_id,))
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("DELETE FROM edit_sessions WHERE opportunity_id=%s", (opportunity_id,))
         conn.commit()
 
 
@@ -625,12 +643,12 @@ def get_pending_opportunities(
 ) -> list[Opportunity]:
     init_db(db_path)
     with _connect(db_path) as conn:
-        rows = conn.execute(
+        rows = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             SELECT * FROM opportunities
-            WHERE status = 'pending' AND project_url=?
+            WHERE status = 'pending' AND project_url=%s
             ORDER BY card_sent_at ASC
-            LIMIT ?
+            LIMIT %s
             """,
             (project_url.strip(), int(limit)),
         ).fetchall()
@@ -645,11 +663,11 @@ def update_opportunity_delivery(
 ) -> None:
     init_db(db_path)
     with _connect(db_path) as conn:
-        conn.execute(
+        conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
             """
             UPDATE opportunities
-            SET telegram_message_id=?, card_sent_at = ?
-            WHERE id=?
+            SET telegram_message_id=%s, card_sent_at = %s
+            WHERE id=%s
             """,
             (int(telegram_message_id), card_sent_at, opportunity_id),
         )
@@ -666,24 +684,24 @@ def get_stale_pending_opportunities(
     cutoff = hours_ago_sqlite(hours)
     with _connect(db_path) as conn:
         if project_url:
-            rows = conn.execute(
+            rows = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
                 """
                 SELECT * FROM opportunities
                 WHERE status = 'pending'
-                  AND project_url=?
+                  AND project_url=%s
                   AND card_sent_at IS NOT NULL
-                  AND card_sent_at <= ?
+                  AND card_sent_at <= %s
                 ORDER BY card_sent_at ASC
                 """,
                 (project_url.strip(), cutoff),
             ).fetchall()
         else:
-            rows = conn.execute(
+            rows = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
                 """
                 SELECT * FROM opportunities
                 WHERE status = 'pending'
                   AND card_sent_at IS NOT NULL
-                  AND card_sent_at <= ?
+                  AND card_sent_at <= %s
                 ORDER BY card_sent_at ASC
                 """,
                 (cutoff,),
@@ -701,30 +719,30 @@ def purge_editorial_data(
     with _connect(db_path) as conn:
         if project_url:
             opp_ids = [
-                r["id"] for r in conn.execute(
-                    "SELECT id FROM opportunities WHERE project_url=?", (project_url.strip(),)
+                r["id"] for r in conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
+                    "SELECT id FROM opportunities WHERE project_url=%s", (project_url.strip(),)
                 ).fetchall()
             ]
         else:
-            opp_ids = [r["id"] for r in conn.execute("SELECT id FROM opportunities").fetchall()]
+            opp_ids = [r["id"] for r in conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("SELECT id FROM opportunities").fetchall()]
         if opp_ids:
-            placeholders = ",".join("?" * len(opp_ids))
-            cur = conn.execute(
+            placeholders = ",".join("%s" * len(opp_ids))
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
                 f"DELETE FROM feedback_events WHERE opportunity_id IN ({placeholders})", opp_ids
             )
             counts["feedback"] = cur.rowcount
-            cur = conn.execute(
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
                 f"DELETE FROM content_versions WHERE opportunity_id IN ({placeholders})", opp_ids
             )
             counts["versions"] = cur.rowcount
-            cur = conn.execute(
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute(
                 f"DELETE FROM edit_sessions WHERE opportunity_id IN ({placeholders})", opp_ids
             )
             counts["edit_sessions"] = cur.rowcount
         if project_url:
-            cur = conn.execute("DELETE FROM opportunities WHERE project_url=?", (project_url.strip(),))
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("DELETE FROM opportunities WHERE project_url=%s", (project_url.strip(),))
         else:
-            cur = conn.execute("DELETE FROM opportunities")
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("DELETE FROM opportunities")
         counts["opportunities"] = cur.rowcount
         conn.commit()
     return counts

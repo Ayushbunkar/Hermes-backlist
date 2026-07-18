@@ -1,33 +1,32 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status') || 'pending';
-  const limit = parseInt(searchParams.get('limit') || '50');
-  const offset = parseInt(searchParams.get('offset') || '0');
-
   try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const client = await pool.connect();
     
-    const query = 
-      SELECT id, title, url, platform, category, score_100, confidence, status, business_impact, run_id, created_at, pending_since
+    // Opportunities linked to user
+    const result = await client.query('SELECT * FROM opportunities WHERE user_id = \ ORDER BY id DESC LIMIT 100', [session.id]);
+    
+    // Stats for user
+    const statsResult = await client.query(
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pending,
+        COUNT(CASE WHEN status = 'APPROVED' OR status = 'GATED' THEN 1 END) as approved,
+        COUNT(CASE WHEN status = 'REJECTED' THEN 1 END) as rejected
       FROM opportunities
-      WHERE status = 
-      ORDER BY created_at DESC
-      LIMIT  OFFSET 
-    ;
-    const result = await client.query(query, [status, limit, offset]);
-
-    const countQuery = SELECT COUNT(*) FROM opportunities WHERE status = ;
-    const countResult = await client.query(countQuery, [status]);
+      WHERE user_id = \
+    , [session.id]);
 
     client.release();
-
-    return NextResponse.json({
-      data: result.rows,
-      total: parseInt(countResult.rows[0].count),
-      page: Math.floor(offset / limit) + 1,
+    return NextResponse.json({ 
+      opportunities: result.rows,
+      stats: statsResult.rows[0]
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
