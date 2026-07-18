@@ -193,7 +193,18 @@ def _card_score_display(card: dict) -> tuple[str, str, str, str]:
     
     # Parse new fields
     confidence = card.get("confidence")
-    confidence_display = f"{confidence}%" if confidence is not None else "N/A"
+    if confidence is not None:
+        if confidence >= 90:
+            conf_label = "Very High"
+        elif confidence >= 75:
+            conf_label = "High"
+        elif confidence >= 60:
+            conf_label = "Medium"
+        else:
+            conf_label = "Low"
+        confidence_display = f"{confidence}% ({conf_label})"
+    else:
+        confidence_display = "N/A"
     
     breakdown_text = ""
     bd = card.get("score_breakdown")

@@ -129,7 +129,14 @@ def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None 
     raw = platform_weight_score + recency_part + niche_overlap_part + host_usability_part + freshness_bonus_part
     total_score = round(max(0.0, min(100.0, raw)), 2)
     
-    confidence = int(min(100, max(0, (relevance / 10.0 * 50) + (host_usability / 100.0 * 50))))
+    # Phase 2: Factor-driven AI Confidence Metric
+    # Weights: Relevance (35%), Authority (25%), Freshness (20%), Platform Reliability (20%)
+    relevance_conf = (niche_overlap_part / 20.0) * 35 if niche_overlap_part else 0
+    authority_conf = (platform_weight_score / 30.0) * 25 if platform_weight_score else 0
+    freshness_conf = (recency_part / 30.0) * 20 if recency_part else 0
+    usability_conf = (host_usability_part / 10.0) * 20 if host_usability_part else 0
+    
+    confidence = int(min(100, max(0, relevance_conf + authority_conf + freshness_conf + usability_conf)))
     
     breakdown = {
         "recency": round(recency_part, 2),
