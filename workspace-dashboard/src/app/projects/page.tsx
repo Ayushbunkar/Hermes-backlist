@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search } from 'lucide-react';
+import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProjectsPage() {
@@ -14,6 +14,23 @@ export default function ProjectsPage() {
   const [activeProject, setActiveProject] = useState<number | null>(null);
   const [sourceDomain, setSourceDomain] = useState('');
   const [addingSource, setAddingSource] = useState(false);
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+  const fetchActivity = async () => {
+    try {
+      const res = await fetch('/api/activity');
+      const data = await res.json();
+      setActivityLogs(data.events || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchProjects = async () => {
     try {
@@ -94,6 +111,37 @@ export default function ProjectsPage() {
           Projects Management
         </h1>
         <p className="text-gray-400">Add websites for Hermes to scan and discover backlink opportunities.</p>
+      </div>
+
+      <div className="bg-gray-950/50 border border-gray-800 rounded-2xl p-4 shadow-sm overflow-hidden relative">
+        <h2 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">
+          <Terminal size={16} /> Live System Activity
+        </h2>
+        <div className="space-y-1 h-32 overflow-y-auto font-mono text-xs text-gray-300 flex flex-col-reverse">
+          <AnimatePresence>
+            {activityLogs.map((log, i) => (
+              <motion.div 
+                key={log.timestamp + i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="py-1 border-b border-gray-800/50 last:border-0"
+              >
+                <span className="text-gray-500 mr-2">[{log.timestamp}]</span>
+                <span className={log.message.includes('found') ? 'text-green-400' : 'text-gray-300'}>{log.message}</span>
+              </motion.div>
+            ))}
+            {activityLogs.length === 0 && (
+              <div className="text-gray-500 italic">Waiting for backend activity...</div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Live</span>
+        </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-sm">

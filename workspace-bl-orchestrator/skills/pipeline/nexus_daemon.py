@@ -71,6 +71,28 @@ def log(msg: str) -> None:
         return
     ts = now_sqlite()
     print(f"[nexus {ts}] {msg}", flush=True)
+    
+    # Live Activity Tracker logging
+    try:
+        log_path = os.path.expanduser("~/.openclaw-backlink/data/activity_log.json")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        
+        events = []
+        if os.path.exists(log_path):
+            with open(log_path, 'r', encoding='utf-8') as f:
+                try:
+                    events = json.load(f)
+                except:
+                    events = []
+        
+        events.append({"timestamp": ts, "message": msg})
+        if len(events) > 20:
+            events = events[-20:]
+            
+        with open(log_path, 'w', encoding='utf-8') as f:
+            json.dump(events, f)
+    except Exception:
+        pass
 
 
 def _funnel_snapshot(db_path: str) -> dict[str, int]:
