@@ -58,17 +58,17 @@ class PostgresSQLiteAdapter:
 
     def cursor(self):
         import psycopg2.extras
-        return self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        return self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     def execute(self, sql, parameters=()):
         import psycopg2.extras
-        c = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         c.execute(self._translate_sql(sql), parameters)
         return c
 
     def executemany(self, sql, parameters_seq):
         import psycopg2.extras
-        c = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        c = self._conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         c.executemany(self._translate_sql(sql), parameters_seq)
         return c
 
