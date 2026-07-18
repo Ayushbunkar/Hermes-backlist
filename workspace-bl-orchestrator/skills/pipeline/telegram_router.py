@@ -71,7 +71,12 @@ async def handle_callback(update, context):
         import config
         wdb.init_whitelist_db(config.BL_DB_PATH)
         name = project.split("://")[-1] if "://" in project else project
-        wdb.upsert_project(project, niche="auto", name=name)
+        pid = wdb.upsert_project(project, niche="auto", name=name)
+        
+        # Seed default whitelist domains so the daemon actually has sites to scan
+        default_sites = ["reddit.com", "news.ycombinator.com", "bitcointalk.org"]
+        for site in default_sites:
+            wdb.upsert_whitelist_site(pid, site, added_by="seed", db_path=config.BL_DB_PATH)
         
         if project.startswith("pdf://"):
             conn = config.get_db_connection()
