@@ -3,11 +3,28 @@ import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth';
 
+const rateLimit = new Map<string, { count: number; resetTime: number }>();
+
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const now = Date.now();
+    
+    // Basic Rate Limiting: Max 5 attempts per 15 minutes
+    const record = rateLimit.get(ip) || { count: 0, resetTime: now + 15 * 60 * 1000 };
+    if (now > record.resetTime) {
+      record.count = 0;
+      record.resetTime = now + 15 * 60 * 1000;
+    }
+    if (record.count >= 5) {
+      return NextResponse.json({ error: 'Too many login attempts. Try again later.' }, { status: 429 });
+    }
+    record.count++;
+    rateLimit.set(ip, record);
+
     const { email, password } = await req.json();
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM users WHERE email = \', [email]);
+    const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     client.release();
 
     if (result.rows.length === 0) {

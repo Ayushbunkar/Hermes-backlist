@@ -16,12 +16,12 @@ export async function POST(request: Request) {
     
     if (lowerMsg.includes('pending')) {
       const result = await client.query('SELECT COUNT(*) FROM opportunities WHERE status = pending');
-      aiResponse = You currently have  pending opportunities waiting for approval. Would you like me to list the top 3?;
+      aiResponse = `You currently have ${result.rows[0].count} pending opportunities waiting for approval. Would you like to review them?`;
     } 
     else if (lowerMsg.includes('highest impact') || lowerMsg.includes('top')) {
       const result = await client.query('SELECT title, score_100 FROM opportunities WHERE status = approved ORDER BY score_100 DESC LIMIT 3');
-      const tops = result.rows.map((r: any) => -  (Score: )).join('\n');
-      aiResponse = Here are your highest-impact approved opportunities based on AI scoring:\n\n;
+      const tops = result.rows.map((r: any) => `- ${r.title} (Score: ${r.score_100})`);
+      aiResponse = `Here are the top opportunities:\n\n${tops.join('\n')}`;
     }
     else if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
       aiResponse = "Hello! I am Hermes AI. I can analyze your backlink database. Ask me about pending cards, top platforms, or highest impact opportunities.";

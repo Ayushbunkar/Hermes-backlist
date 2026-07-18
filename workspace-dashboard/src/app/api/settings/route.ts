@@ -8,7 +8,7 @@ export async function GET() {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM system_settings WHERE user_id = \', [session.id]);
+    const result = await client.query('SELECT * FROM system_settings WHERE user_id = $1', [session.id]);
     client.release();
 
     if (result.rows.length === 0) {
@@ -44,11 +44,11 @@ export async function POST(req: Request) {
 
     for (const [k, v] of Object.entries(body)) {
       if (['min_score', 'schedule_frequency_minutes', 'learning_enabled', 'ai_model'].includes(k)) {
-        updates.push(\ = \$\);
+        updates.push(`${k} = $${idx}`);
         values.push(k === 'learning_enabled' ? (v ? 1 : 0) : v);
         idx++;
       } else if (['platforms', 'reminder_intervals_hours', 'business_thresholds'].includes(k)) {
-        updates.push(\ = \$\);
+        updates.push(`${k} = $${idx}`);
         values.push(JSON.stringify(v));
         idx++;
       }
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     if (updates.length > 0) {
       values.push(session.id);
       await client.query(
-        UPDATE system_settings SET \ WHERE user_id = \$\,
+        `UPDATE system_settings SET ${updates.join(', ')} WHERE user_id = $${idx}`,
         values
       );
     }

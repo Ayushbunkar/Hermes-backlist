@@ -9,7 +9,7 @@ export default function OpportunitiesPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(/api/opportunities?status=`&limit=20)
+    fetch(`/api/opportunities?status=${statusFilter}&limit=20`)
       .then(res => res.json())
       .then(d => {
         setData(d.data || []);
@@ -83,7 +83,7 @@ export default function OpportunitiesPage() {
                       <span className={ont-bold }>{opp.score_100 || '-'}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {opp.confidence ? ${opp.confidence}% : '-'}
+                      {opp.confidence ? `${opp.confidence}%` : '-'}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {opp.business_impact ? (

@@ -52,14 +52,14 @@ export default function AiChatPage() {
       <div className="flex-1 bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col shadow-sm">
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {messages.map((msg, i) => (
-            <div key={i} className={lex gap-4 }>
+            <div key={i} className={`flex gap-4 ${msg.role === 'ai' ? 'justify-start' : 'justify-end'}`}>
               {msg.role === 'ai' && (
                 <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-1">
                   <Bot size={18} className="text-white" />
                 </div>
               )}
               
-              <div className={max-w-[80%] rounded-2xl px-5 py-3 }>
+              <div className={`${msg.role === 'ai' ? 'bg-gray-800' : 'bg-blue-600'} max-w-[80%] rounded-2xl px-5 py-3`}>
                 <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
               </div>
 

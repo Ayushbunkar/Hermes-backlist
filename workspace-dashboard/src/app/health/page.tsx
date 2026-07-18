@@ -19,7 +19,7 @@ export default function HealthPage() {
       yellow: 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
       red: 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]',
     };
-    return <div className={w-3 h-3 rounded-full } />;
+    return <div className={`w-3 h-3 rounded-full ${colors[status] || 'bg-gray-500'}`} />;
   };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };

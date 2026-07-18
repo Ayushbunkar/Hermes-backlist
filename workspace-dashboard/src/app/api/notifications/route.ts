@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      'SELECT * FROM notifications WHERE user_id = \ ORDER BY created_at DESC LIMIT \',
+      'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2',
       [session.id, limit]
     );
     client.release();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (body.action === 'mark_read' && body.id) {
       const client = await pool.connect();
-      await client.query('UPDATE notifications SET is_read = 1 WHERE id = \ AND user_id = \', [body.id, session.id]);
+      await client.query('UPDATE notifications SET is_read = 1 WHERE id = $1 AND user_id = $2', [body.id, session.id]);
       client.release();
       return NextResponse.json({ success: true });
     }
