@@ -43,6 +43,16 @@ class PostgresSQLiteAdapter:
         sql = sql.replace("PRAGMA foreign_keys=ON", "SELECT 1")
         return sql
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def cursor(self):
+        import psycopg2.extras
+        return self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
     def execute(self, sql, parameters=()):
         import psycopg2.extras
         c = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
