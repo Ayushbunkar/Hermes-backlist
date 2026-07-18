@@ -42,7 +42,11 @@ class PostgresSQLiteAdapter:
                 table_name = match.group(1).strip("'\"")
                 return f"SELECT column_name AS name FROM information_schema.columns WHERE table_name = '{table_name}'"
 
+        sql = re.sub(r"datetime\('now',\s*\?\s*\|\|\s*'([^']+)'\)", r"NOW() AT TIME ZONE 'UTC' + CAST(? || ' \1' AS INTERVAL)", sql)
+        sql = re.sub(r"datetime\('now',\s*\?\)", r"NOW() AT TIME ZONE 'UTC' + CAST(? AS INTERVAL)", sql)
+        sql = re.sub(r"datetime\('now',\s*'([^']+)'\)", r"NOW() AT TIME ZONE 'UTC' + INTERVAL '\1'", sql)
         sql = sql.replace("datetime('now')", "timezone('utc', now())")
+        
         sql = sql.replace("INSERT OR REPLACE", "INSERT INTO")
         sql = sql.replace('?', '%s')
         sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")

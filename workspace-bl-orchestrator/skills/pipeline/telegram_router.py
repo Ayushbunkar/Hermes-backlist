@@ -26,7 +26,8 @@ async def onboard_command(update, context):
     try:
         c.execute("INSERT INTO onboard_sessions (chat_id, user_id, step) VALUES (%s, %s, %s)", (str(chat_id), str(user_id), "start"))
     except Exception:
-        # If session exists, just reset it to 'start'
+        # If session exists, rollback the failed insert and update it instead
+        conn.rollback()
         c.execute("UPDATE onboard_sessions SET step=%s WHERE chat_id=%s AND user_id=%s", ("start", str(chat_id), str(user_id)))
     conn.commit()
     conn.close()
