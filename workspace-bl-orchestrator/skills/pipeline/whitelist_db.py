@@ -1153,8 +1153,8 @@ def record_query_stats(
                 INSERT INTO query_stats (project_id, domain, template_id, runs, new_leads, last_used)
                 VALUES (%s, %s, %s, 1, %s, timezone('utc', now()))
                 ON CONFLICT(project_id, domain, template_id) DO UPDATE SET
-                  runs = runs + 1,
-                  new_leads = new_leads + excluded.new_leads,
+                  runs = query_stats.runs + 1,
+                  new_leads = query_stats.new_leads + excluded.new_leads,
                   last_used = timezone('utc', now())
                 """,
                 (project_id, dom, tid, int(new_count)),

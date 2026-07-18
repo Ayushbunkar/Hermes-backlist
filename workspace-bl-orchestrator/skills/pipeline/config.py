@@ -4,7 +4,7 @@ import sys
 
 def load_env(env_path=None):
     if not env_path:
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
         env_path = os.path.join(root_dir, ".env")
     if not os.path.exists(env_path):
         return
