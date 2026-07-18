@@ -80,7 +80,7 @@ export default function OpportunitiesPage() {
                       <span className="bg-gray-800 px-2.5 py-1 rounded-md text-xs">{opp.platform || 'Web'}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={ont-bold }>{opp.score_100 || '-'}</span>
+                      <span className="font-bold text-white">{opp.score_100 || '-'}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       {opp.confidence ? `${opp.confidence}%` : '-'}
