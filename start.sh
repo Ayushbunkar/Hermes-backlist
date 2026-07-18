@@ -25,7 +25,7 @@ if [ ! -d "node_modules" ]; then
     echo "-> Installing Dashboard dependencies (this will only happen once)..."
     npm install
 fi
-npm run dev &
+npm run dev -- -H 0.0.0.0 &
 cd ..
 DASHBOARD_PID=$!
 
