@@ -14,14 +14,14 @@ export default function Overview() {
 
   if (!data) return <div className="text-white">Loading Overview...</div>;
 
-  const mockChartData = [
-    { name: 'Mon', opps: 120 },
-    { name: 'Tue', opps: 180 },
-    { name: 'Wed', opps: 250 },
-    { name: 'Thu', opps: 190 },
-    { name: 'Fri', opps: 310 },
-    { name: 'Sat', opps: 150 },
-    { name: 'Sun', opps: 210 },
+  const chartData = data.chartData || [
+    { name: 'Mon', opps: 0 },
+    { name: 'Tue', opps: 0 },
+    { name: 'Wed', opps: 0 },
+    { name: 'Thu', opps: 0 },
+    { name: 'Fri', opps: 0 },
+    { name: 'Sat', opps: 0 },
+    { name: 'Sun', opps: 0 },
   ];
 
   return (
@@ -82,7 +82,7 @@ export default function Overview() {
         <h3 className="text-lg font-semibold text-white mb-6">Daily Opportunities</h3>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={mockChartData}>
+            <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
               <XAxis dataKey="name" stroke="#9CA3AF" axisLine={false} tickLine={false} />
               <YAxis stroke="#9CA3AF" axisLine={false} tickLine={false} />

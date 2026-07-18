@@ -26,6 +26,33 @@ export async function GET() {
     const averageScore = parseFloat(avgResult.rows[0].avg_score || 0).toFixed(1);
     const averageConfidence = parseFloat(avgResult.rows[0].avg_conf || 0).toFixed(1);
 
+    // Chart Data (last 7 days)
+    const chartResult = await client.query(`
+      SELECT DATE(created_at) as date, COUNT(*) as count 
+      FROM opportunities 
+      WHERE created_at >= CURRENT_DATE - INTERVAL '6 days'
+      GROUP BY DATE(created_at)
+    `);
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const chartData = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0]; 
+      
+      const row = chartResult.rows.find((r: any) => {
+        if (!r.date) return false;
+        const rDate = new Date(r.date);
+        return rDate.toISOString().split('T')[0] === dateStr;
+      });
+
+      chartData.push({
+        name: days[d.getDay()],
+        opps: row ? parseInt(row.count) : 0
+      });
+    }
+
     client.release();
 
     return NextResponse.json({
@@ -34,7 +61,8 @@ export async function GET() {
       rejected,
       pending,
       averageScore: Number(averageScore),
-      averageConfidence: Number(averageConfidence)
+      averageConfidence: Number(averageConfidence),
+      chartData
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
