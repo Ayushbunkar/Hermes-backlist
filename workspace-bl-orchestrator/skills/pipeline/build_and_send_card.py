@@ -265,6 +265,24 @@ def build_card_header(card: dict) -> str:
     if breakdown_text:
         lines.extend(["", "📊 <b>Breakdown:</b>", breakdown_text])
         
+    impact_dict = card.get("business_impact")
+    if impact_dict:
+        if isinstance(impact_dict, str):
+            try:
+                impact_dict = json.loads(impact_dict)
+            except:
+                impact_dict = {}
+        if isinstance(impact_dict, dict) and impact_dict:
+            lines.extend([
+                "",
+                "📈 <b>Business Impact</b>",
+                f"• Lead Quality: {impact_dict.get('lead_quality', 'N/A')}",
+                f"• Priority: {impact_dict.get('priority', 'N/A')}",
+                f"• Traffic: {impact_dict.get('traffic', 'N/A')}",
+                f"• Revenue: {impact_dict.get('revenue', 'N/A')}",
+                f"• SEO Impact: {impact_dict.get('seo', 'N/A')}",
+            ])
+            
     if reasoning_text:
         lines.extend(["", "💡 <b>Reason:</b>", reasoning_text])
         

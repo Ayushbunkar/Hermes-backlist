@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   score_breakdown TEXT,
   confidence INTEGER,
   reasoning TEXT,
+  business_impact TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_tg_msg ON opportunities(telegram_group, telegram_message_id);
@@ -132,6 +133,7 @@ class Opportunity:
     score_breakdown: str | None = None
     confidence: int | None = None
     reasoning: str | None = None
+    business_impact: str | None = None
 
 
 @dataclass
@@ -177,6 +179,7 @@ _OPPORTUNITY_MIGRATIONS: dict[str, str] = {
     "score_breakdown": "ALTER TABLE opportunities ADD COLUMN score_breakdown TEXT",
     "confidence": "ALTER TABLE opportunities ADD COLUMN confidence INTEGER",
     "reasoning": "ALTER TABLE opportunities ADD COLUMN reasoning TEXT",
+    "business_impact": "ALTER TABLE opportunities ADD COLUMN business_impact TEXT",
 }
 
 
@@ -268,8 +271,8 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               submission_url, target_title, target_excerpt, opportunity_context,
               opportunity_freshness, posting_action, posting_steps,
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
-              score_100, rank, score_breakdown, confidence, reasoning
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              score_100, rank, score_breakdown, confidence, reasoning, business_impact
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_id,
@@ -308,6 +311,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
                 json.dumps(card.get("score_breakdown")) if isinstance(card.get("score_breakdown"), dict) else card.get("score_breakdown"),
                 card.get("confidence"),
                 json.dumps(card.get("reasoning")) if isinstance(card.get("reasoning"), list) else card.get("reasoning"),
+                json.dumps(card.get("business_impact")) if isinstance(card.get("business_impact"), dict) else card.get("business_impact"),
             ),
         )
         conn.commit()

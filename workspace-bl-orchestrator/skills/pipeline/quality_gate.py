@@ -41,13 +41,13 @@ GATE_AGENT = os.environ.get("BL_GATE_AGENT", "bl-gate")
 PROFILE = os.environ.get("BL_PROFILE", "backlink")
 
 _SYSTEM_PROMPT = (
-    "You are a strict backlink-opportunity quality gate. For each candidate thread you receive, "
-    "decide how good a fit it is for placing a single, genuinely helpful reply that references the "
-    "given project. Reward: on-topic discussions/questions, recent activity, places where a real "
-    "answer adds value. Penalize: spam, off-topic pages, listicles/news with no discussion, dead or "
-    "login-walled threads, and anything where a link would look like spam. "
-    "Reject non-English content (score 0) — only English threads are actionable. "
-    "Return STRICT JSON only: {\"scores\":[{\"i\":<index>,\"score\":<0-10 number>,\"reason\":\"<short>\"}]}. "
+    "You are a strict backlink-opportunity quality gate and business impact predictor. "
+    "For each candidate thread, decide how good a fit it is for placing a genuinely helpful reply. "
+    "Reward: on-topic discussions, recent activity. Penalize: spam, off-topic, listicles. "
+    "Reject non-English content (score 0). "
+    "You must ALSO estimate the business impact based on platform authority, topic, intent, and audience urgency. "
+    "Return STRICT JSON ONLY matching this exact schema:\\n"
+    "{\\"scores\\":[{\\"i\\":<index>,\\"score\\":<0-10 number>,\\"reason\\":\\"<short>\\",\\"impact\\":{\\"traffic\\":\\"<e.g. 12K>\\",\\"seo\\":\\"<Low/Medium/High>\\",\\"lead_quality\\":\\"<e.g. Excellent>\\",\\"business_impact\\":\\"<e.g. High>\\",\\"revenue\\":\\"<e.g. $4500>\\",\\"priority\\":\\"<Low/Medium/High>\\"}}]} \\n"
     "No prose outside the JSON."
 )
 
@@ -125,8 +125,18 @@ def _parse_scores(content: str, n: int) -> dict[int, dict]:
                 continue
             out[idx] = {
                 "score": max(0.0, min(10.0, score)),
-                "reason": str(item.get("reason") or "")[:200],
-            }
+            res_idx = int(item.get("i", -1))
+            score = float(item.get("score", 0.0))
+            reason = str(item.get("reason") or "").strip()
+            impact = item.get("impact") or {}
+            if 0 <= res_idx < n:
+                out[res_idx] = {
+                    "score": max(0.0, min(10.0, score)),
+                    "reason": reason[:200],
+                    "impact": impact
+                }
+        except (KeyError, ValueError, TypeError):
+            continue
     return out
 
 
@@ -140,6 +150,7 @@ def _apply_scores(leads: list[dict], scores: dict[int, dict], threshold: float) 
         else:
             lead["gate_score"] = judged["score"]
             lead["gate_reason"] = judged["reason"]
+            lead["business_impact"] = judged.get("impact")
             lead["gate_passed"] = judged["score"] >= threshold
         plog_verbose(
             "gate", "gate_lead",
@@ -241,18 +252,18 @@ def _read_gate_result(result_path: str, n: int) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for item in scores_raw:
         try:
-            idx = int(item["i"])
+            res_idx = int(item.get("i", -1))
+            score = float(item.get("score", 0.0))
+            reason = str(item.get("reason") or "").strip()
+            impact = item.get("impact") or {}
+            if 0 <= res_idx < n:
+                out[res_idx] = {
+                    "score": max(0.0, min(10.0, score)),
+                    "reason": reason[:200],
+                    "impact": impact
+                }
         except (KeyError, ValueError, TypeError):
             continue
-        if 0 <= idx < n:
-            try:
-                score = float(item.get("score"))
-            except (TypeError, ValueError):
-                continue
-            out[idx] = {
-                "score": max(0.0, min(10.0, score)),
-                "reason": str(item.get("reason") or "")[:200],
-            }
     if not out:
         raise ValueError("no valid scores in gate_result.json")
     return out
