@@ -173,11 +173,13 @@ def run_worker(worker_id: str, task_payload: dict, timeout_seconds: int = 120, t
                 text = text.lstrip("json").strip()
             try:
                 parsed = json.loads(text)
+                if isinstance(parsed, dict) and "status" not in parsed:
+                    parsed["status"] = "ok"
                 with open(posts_path, "w", encoding="utf-8") as f:
                     json.dump(parsed, f)
             except Exception:
                 with open(posts_path, "w", encoding="utf-8") as f:
-                    json.dump({"posts": []}, f)
+                    json.dump({"status": "error", "posts": []}, f)
                     
         return {"status": "success"}
     except Exception as he:

@@ -123,8 +123,19 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
         f"Write all posts to: {posts_path}\n"
         "Do not web_fetch blocked domains (reddit.com, x.com, twitter.com) — "
         "use target_title and target_excerpt from the queue.\n"
-        "Each post's site_url MUST equal the opportunity url it answers. "
-        "Do NOT return JSON in chat. Yield SUCCESS only."
+        "Each post's site_url MUST equal the opportunity url it answers.\n"
+        "You MUST return a raw JSON object with this exact schema:\n"
+        "{\n"
+        '  "status": "ok",\n'
+        '  "posts": [\n'
+        '    {\n'
+        '      "site_url": "the opportunity url",\n'
+        '      "content": "the full post content",\n'
+        '      "image_path": "path/to/image.jpg (if applicable, else omit)"\n'
+        '    }\n'
+        '  ]\n'
+        "}\n"
+        "Do NOT return Markdown blocks. Yield JSON only."
     )
     import hermes_client
     plog_verbose("draft", "ink_invoke", run_dir=run_dir, manifest=manifest_path)
