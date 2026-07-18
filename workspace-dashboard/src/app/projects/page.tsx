@@ -151,19 +151,14 @@ export default function ProjectsPage() {
                             <div className="mt-3 bg-gray-950 border border-gray-800 rounded-lg p-3">
                               <div className="flex items-center gap-2 text-xs text-blue-400 font-medium mb-2">
                                 <Search size={14} className="animate-pulse" />
-                                Live Search Queries (Perplexity-style)
+                                Live Search Queries
                               </div>
-                              <div className="flex flex-wrap gap-2">
-                                {queries.slice(0, 5).map((q: string, i: number) => (
-                                  <span key={i} className="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-700 truncate max-w-[250px]">
+                              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                                {queries.map((q: string, i: number) => (
+                                  <span key={i} className="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-700 truncate max-w-[250px] hover:bg-gray-800 transition-colors">
                                     "{q}"
                                   </span>
                                 ))}
-                                {queries.length > 5 && (
-                                  <span className="bg-gray-900 text-gray-500 text-xs px-2 py-1 rounded border border-gray-700">
-                                    +{queries.length - 5} more
-                                  </span>
-                                )}
                               </div>
                             </div>
                           )}
