@@ -57,7 +57,7 @@ def _call_bifrost_with_retry(prompt: str, model: str, timeout: int = 60, max_ret
     req = urllib.request.Request(
         url,
         data=data_encoded,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', 'sk-bf-b661f36a-47ed-429a-8ace-3554d8c57999')}"},
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY', os.environ.get('OPENAI_API_KEY', 'sk-bf-b661f36a-47ed-429a-8ace-3554d8c57999'))}"},
         method="POST",
     )
     

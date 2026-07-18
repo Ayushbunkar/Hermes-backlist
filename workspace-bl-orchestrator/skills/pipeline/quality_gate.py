@@ -91,7 +91,7 @@ def _call_llm(
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', 'sk-bf-b661f36a-47ed-429a-8ace-3554d8c57999')}",
+            "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY', os.environ.get('OPENAI_API_KEY', 'sk-bf-b661f36a-47ed-429a-8ace-3554d8c57999'))}",
         },
         method="POST",
     )
