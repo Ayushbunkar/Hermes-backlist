@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     };
 
     const result = await client.query(
-      'INSERT INTO projects (project_url, niche, project_config_json) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO projects (project_url, niche, config_json) VALUES ($1, $2, $3) RETURNING *',
       [url, niche, JSON.stringify(default_config)]
     );
     
