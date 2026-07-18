@@ -460,8 +460,19 @@ def tick() -> None:
         phases.append(("competitor", phase_competitor))
     if _tick_counter % VOCAB_EVERY_TICKS == 0:
         phases.append(("vocab", phase_vocab))
+
+    # Domain promotion check
     if _tick_counter % DOMAIN_PROMOTE_EVERY_TICKS == 0:
-        phases.append(("domains", phase_domain_promote))
+        phase_domain_promote()
+        
+    # Pending reminders check (roughly every hour)
+    if _tick_counter % int(max(1, 3600 / AIR_GAP_SECONDS)) == 0:
+        try:
+            log("triggering send_reminders.py")
+            subprocess.Popen([sys.executable, os.path.join(_PIPELINE_DIR, "send_reminders.py")])
+        except Exception as e:
+            log(f"failed to trigger reminders: {e}")
+
     if _tick_counter % PRIORITY_REFRESH_EVERY_TICKS == 0:
         phases.append(("priority", phase_refresh_priorities))
     phases.extend([

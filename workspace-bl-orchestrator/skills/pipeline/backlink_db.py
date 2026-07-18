@@ -51,6 +51,9 @@ CREATE TABLE IF NOT EXISTS opportunities (
   confidence INTEGER,
   reasoning TEXT,
   business_impact TEXT,
+  last_reminder TEXT,
+  reminder_count INTEGER DEFAULT 0,
+  pending_since TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_bl_tg_msg ON opportunities(telegram_group, telegram_message_id);
@@ -134,6 +137,9 @@ class Opportunity:
     confidence: int | None = None
     reasoning: str | None = None
     business_impact: str | None = None
+    last_reminder: str | None = None
+    reminder_count: int = 0
+    pending_since: str | None = None
 
 
 @dataclass
@@ -180,6 +186,9 @@ _OPPORTUNITY_MIGRATIONS: dict[str, str] = {
     "confidence": "ALTER TABLE opportunities ADD COLUMN confidence INTEGER",
     "reasoning": "ALTER TABLE opportunities ADD COLUMN reasoning TEXT",
     "business_impact": "ALTER TABLE opportunities ADD COLUMN business_impact TEXT",
+    "last_reminder": "ALTER TABLE opportunities ADD COLUMN last_reminder TEXT",
+    "reminder_count": "ALTER TABLE opportunities ADD COLUMN reminder_count INTEGER DEFAULT 0",
+    "pending_since": "ALTER TABLE opportunities ADD COLUMN pending_since TEXT",
 }
 
 
@@ -271,8 +280,9 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               submission_url, target_title, target_excerpt, opportunity_context,
               opportunity_freshness, posting_action, posting_steps,
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
-              score_100, rank, score_breakdown, confidence, reasoning, business_impact
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              score_100, rank, score_breakdown, confidence, reasoning, business_impact,
+              last_reminder, reminder_count, pending_since
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_id,
@@ -312,6 +322,9 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
                 card.get("confidence"),
                 json.dumps(card.get("reasoning")) if isinstance(card.get("reasoning"), list) else card.get("reasoning"),
                 json.dumps(card.get("business_impact")) if isinstance(card.get("business_impact"), dict) else card.get("business_impact"),
+                card.get("last_reminder"),
+                card.get("reminder_count") or 0,
+                card.get("pending_since") or card.get("card_sent_at")
             ),
         )
         conn.commit()
