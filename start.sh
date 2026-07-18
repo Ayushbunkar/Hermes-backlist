@@ -3,6 +3,11 @@ echo "========================================="
 echo "       🚀 STARTING HERMES ENGINE 🚀      "
 echo "========================================="
 
+echo "-> Cleaning up old background processes..."
+pkill -f "telegram_router.py" || true
+pkill -f "nexus_daemon.py" || true
+sleep 1
+
 # 1. Start the Telegram Bot Router in the background
 echo "-> Starting Telegram Router (Bot Listener)..."
 python workspace-bl-orchestrator/skills/pipeline/telegram_router.py &
