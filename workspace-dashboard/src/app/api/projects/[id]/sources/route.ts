@@ -26,24 +26,18 @@ export async function POST(
       
       // Insert or get site
       let siteResult = await client.query(
-        'SELECT id FROM whitelist_sites WHERE domain = $1',
-        [domain]
+        'SELECT id FROM whitelist_sites WHERE project_id = $1 AND domain = $2',
+        [projectId, domain]
       );
       
       let siteId;
       if (siteResult.rows.length === 0) {
         siteResult = await client.query(
-          'INSERT INTO whitelist_sites (domain, site_type, scan_priority) VALUES ($1, $2, $3) RETURNING id',
-          [domain, site_type, scan_priority]
+          'INSERT INTO whitelist_sites (project_id, domain, status, scan_priority) VALUES ($1, $2, $3, $4) RETURNING id',
+          [projectId, domain, 'active', scan_priority]
         );
       }
       siteId = siteResult.rows[0].id;
-      
-      // Link to project
-      await client.query(
-        'INSERT INTO project_whitelist (project_id, site_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [projectId, siteId]
-      );
       
       await client.query('COMMIT');
       return NextResponse.json({ success: true, site_id: siteId });

@@ -15,13 +15,12 @@ export async function GET() {
         p.id, p.project_url, p.niche, p.config_json, p.created_at, p.status,
         COALESCE(
           json_agg(
-            json_build_object('id', w.id, 'domain', w.domain, 'site_type', w.site_type)
+            json_build_object('id', w.id, 'domain', w.domain)
           ) FILTER (WHERE w.id IS NOT NULL),
           '[]'::json
         ) as sources
       FROM projects p
-      LEFT JOIN project_whitelist pw ON p.id = pw.project_id
-      LEFT JOIN whitelist_sites w ON pw.site_id = w.id
+      LEFT JOIN whitelist_sites w ON p.id = w.project_id
       GROUP BY p.id, p.project_url, p.niche, p.config_json, p.created_at, p.status
       ORDER BY p.created_at DESC
     `);
