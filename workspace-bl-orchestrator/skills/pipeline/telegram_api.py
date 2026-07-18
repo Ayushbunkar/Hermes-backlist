@@ -77,6 +77,10 @@ def telegram_request(
     *,
     _allow_retry: bool = True,
 ) -> dict:
+    import config
+    if data is not None and "chat_id" in data and config.TELEGRAM_CHAT_ID:
+        data["chat_id"] = config.TELEGRAM_CHAT_ID
+        
     url = f"https://api.telegram.org/bot{token}/{method}"
     encoded = urllib.parse.urlencode(data or {}).encode("utf-8")
     req = urllib.request.Request(

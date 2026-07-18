@@ -276,6 +276,10 @@ def build_caption(card: dict) -> str:
 def telegram_request(
     token: str, method: str, data: dict | None = None, files: dict | None = None
 ) -> dict:
+    import config
+    if data is not None and "chat_id" in data and config.TELEGRAM_CHAT_ID:
+        data["chat_id"] = config.TELEGRAM_CHAT_ID
+        
     url = f"https://api.telegram.org/bot{token}/{method}"
     if files:
         boundary = "----OpenClawBoundary"

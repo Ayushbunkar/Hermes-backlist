@@ -116,3 +116,7 @@ bin/chromium
 docker/backlink-agent-deploy/openclaw-backlink-agent-image.tar.gz
 
 docker/build-context/bin/chromium
+
+__pycache__/
+
+*.pyc
