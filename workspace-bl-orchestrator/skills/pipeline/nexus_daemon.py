@@ -456,6 +456,13 @@ def phase_resurface() -> None:
 def tick() -> None:
     global _tick_counter
     _tick_counter += 1
+    
+    # Record heartbeat
+    try:
+        bdb.update_heartbeat(DB_PATH)
+    except Exception as e:
+        log(f"heartbeat error: {e}")
+
     phases = [("scan", phase_scan), ("score", phase_score), ("gate", phase_gate)]
     if _tick_counter % OPENWEB_EVERY_TICKS == 0:
         phases.append(("openweb", phase_openweb))

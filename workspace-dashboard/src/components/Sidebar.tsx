@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { LayoutDashboard, Database, Settings, MessageSquare, Bell, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Database, Settings, MessageSquare, Bell, BarChart2, Activity } from 'lucide-react';
 
 const menuItems = [
   { name: 'Overview', icon: LayoutDashboard, href: '/' },
   { name: 'Opportunities', icon: Database, href: '/opportunities' },
   { name: 'Hermes AI', icon: MessageSquare, href: '/ai-chat' },
   { name: 'Notifications', icon: Bell, href: '/notifications' },
+  { name: 'System Health', icon: Activity, href: '/health' },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ];
 

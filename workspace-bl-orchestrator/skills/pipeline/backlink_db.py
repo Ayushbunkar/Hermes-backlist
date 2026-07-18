@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS system_settings (
   schedule_frequency_minutes INTEGER DEFAULT 60,
   telegram_formatting TEXT DEFAULT '',
   business_thresholds TEXT DEFAULT '{}',
-  learning_enabled INTEGER DEFAULT 1
+  learning_enabled INTEGER DEFAULT 1,
+  last_heartbeat TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE IF NOT EXISTS notifications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -401,6 +402,11 @@ def update_settings(updates: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
             query = f"UPDATE system_settings SET {', '.join(fields)} WHERE id = 1"
             conn.execute(query, tuple(values))
             conn.commit()
+
+def update_heartbeat(db_path: str = DEFAULT_DB_PATH) -> None:
+    with _connect(db_path) as conn:
+        conn.execute("UPDATE system_settings SET last_heartbeat = datetime('now') WHERE id = 1")
+        conn.commit()
 
 
 def add_notification(type: str, title: str, message: str, db_path: str = DEFAULT_DB_PATH) -> None:
