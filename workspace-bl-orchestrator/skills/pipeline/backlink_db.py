@@ -94,6 +94,17 @@ CREATE TABLE IF NOT EXISTS edit_sessions (
   created_at TEXT DEFAULT (datetime('now')),
   UNIQUE(opportunity_id, user_id)
 );
+CREATE TABLE IF NOT EXISTS system_settings (
+  id INTEGER PRIMARY KEY,
+  min_score INTEGER DEFAULT 80,
+  platforms TEXT DEFAULT '["reddit", "news"]',
+  reminder_intervals_hours TEXT DEFAULT '{"standard":48, "strong":72, "archive":168}',
+  ai_model TEXT DEFAULT 'vertex/gemini-3.1-flash-lite',
+  schedule_frequency_minutes INTEGER DEFAULT 60,
+  telegram_formatting TEXT DEFAULT '',
+  business_thresholds TEXT DEFAULT '{}',
+  learning_enabled INTEGER DEFAULT 1
+);
 """
 
 
@@ -208,6 +219,8 @@ def init_db(db_path: str = DEFAULT_DB_PATH) -> None:
     with _connect(db_path) as conn:
         conn.executescript(_SCHEMA)
         _ensure_columns(conn)
+        # Ensure default settings row exists
+        conn.execute("INSERT OR IGNORE INTO system_settings (id) VALUES (1)")
         conn.commit()
 
 
@@ -337,6 +350,49 @@ def set_status(opportunity_id: int, status: str, db_path: str = DEFAULT_DB_PATH)
     with _connect(db_path) as conn:
         conn.execute("UPDATE opportunities SET status=? WHERE id=?", (status, opportunity_id))
         conn.commit()
+
+
+def prune_old_archives(days: int = 30, db_path: str = DEFAULT_DB_PATH) -> int:
+    with _connect(db_path) as conn:
+        cutoff = hours_ago_sqlite(days * 24)
+        c = conn.execute("DELETE FROM opportunities WHERE status = 'archived' AND card_sent_at < ?", (cutoff,))
+        conn.commit()
+        return c.rowcount
+
+def get_settings(db_path: str = DEFAULT_DB_PATH) -> dict[str, Any]:
+    with _connect(db_path) as conn:
+        row = conn.execute("SELECT * FROM system_settings WHERE id = 1").fetchone()
+        if not row:
+            return {}
+        import json
+        return {
+            "min_score": row["min_score"],
+            "platforms": json.loads(row["platforms"] or "[]"),
+            "reminder_intervals_hours": json.loads(row["reminder_intervals_hours"] or "{}"),
+            "ai_model": row["ai_model"],
+            "schedule_frequency_minutes": row["schedule_frequency_minutes"],
+            "telegram_formatting": row["telegram_formatting"],
+            "business_thresholds": json.loads(row["business_thresholds"] or "{}"),
+            "learning_enabled": bool(row["learning_enabled"])
+        }
+
+def update_settings(updates: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> None:
+    import json
+    with _connect(db_path) as conn:
+        fields = []
+        values = []
+        for k, v in updates.items():
+            if k in ["platforms", "reminder_intervals_hours", "business_thresholds"]:
+                v = json.dumps(v)
+            if k == "learning_enabled":
+                v = 1 if v else 0
+            fields.append(f"{k} = ?")
+            values.append(v)
+        
+        if fields:
+            query = f"UPDATE system_settings SET {', '.join(fields)} WHERE id = 1"
+            conn.execute(query, tuple(values))
+            conn.commit()
 
 
 def lookup_by_message_id(

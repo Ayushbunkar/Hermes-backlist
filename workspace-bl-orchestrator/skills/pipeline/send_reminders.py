@@ -52,6 +52,12 @@ def process_reminders():
         "SELECT id, pending_since, card_sent_at, reminder_count, telegram_group FROM opportunities WHERE status = 'pending'"
     ).fetchall()
     
+    settings = backlink_db.get_settings()
+    intervals = settings.get("reminder_intervals_hours", {})
+    archive_h = intervals.get("archive", 168)
+    strong_h = intervals.get("strong", 72)
+    standard_h = intervals.get("standard", 48)
+    
     updates = []
     reminders_to_send = {}  # chat_id -> {"count": int, "oldest": int}
     
@@ -76,18 +82,18 @@ def process_reminders():
         hours_elapsed = (now - since_dt).total_seconds() / 3600.0
         days_elapsed = int(hours_elapsed // 24)
         
-        # Rule 1: Auto Archive after 7 days (168 hours)
-        if hours_elapsed > 168:
+        # Rule 1: Auto Archive
+        if hours_elapsed > archive_h:
             updates.append({"id": opp_id, "status": "archived", "reminder_count": rem_count, "last_reminder": row.get("last_reminder")})
             continue
             
         trigger_reminder = False
-        # Rule 2: Stronger reminder > 72h
-        if hours_elapsed > 72 and rem_count < 2:
+        # Rule 2: Stronger reminder
+        if hours_elapsed > strong_h and rem_count < 2:
             rem_count = 2
             trigger_reminder = True
-        # Rule 3: Standard reminder > 48h
-        elif hours_elapsed > 48 and rem_count < 1:
+        # Rule 3: Standard reminder
+        elif hours_elapsed > standard_h and rem_count < 1:
             rem_count = 1
             trigger_reminder = True
             

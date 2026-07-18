@@ -517,6 +517,16 @@ def main() -> int:
 
     ticks = 0
     while True:
+        try:
+            settings = bdb.get_settings(DB_PATH)
+            if "schedule_frequency_minutes" in settings:
+                args.air_gap = int(settings["schedule_frequency_minutes"]) * 60
+            if "min_score" in settings:
+                global GATE_THRESHOLD
+                GATE_THRESHOLD = float(settings["min_score"])
+        except Exception as e:
+            log(f"failed to fetch DB settings: {e}")
+            
         tick()
         ticks += 1
         if args.once or (args.max_ticks and ticks >= args.max_ticks):
