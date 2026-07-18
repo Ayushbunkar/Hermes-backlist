@@ -24,7 +24,7 @@ async def onboard_command(update, context):
     conn = config.get_db_connection()
     c = conn.cursor()
     c.execute("CREATE TABLE IF NOT EXISTS onboard_sessions (chat_id TEXT, user_id TEXT, step TEXT, PRIMARY KEY(chat_id, user_id))")
-    c.execute("INSERT INTO INTO onboard_sessions (chat_id, user_id, step) VALUES (%s, %s, %s)", (str(chat_id), str(user_id), "start"))
+    c.execute("INSERT INTO onboard_sessions (chat_id, user_id, step) VALUES (%s, %s, %s)", (str(chat_id), str(user_id), "start"))
     conn.commit()
     conn.close()
     
@@ -72,12 +72,12 @@ async def handle_document(update, context):
 
 def main():
     logger.info("Starting native Python Telegram Webhook Receiver...")
-    # app = ApplicationBuilder().token(BOT_TOKEN).build()
-    # app.add_handler(CommandHandler("onboard", onboard_command))
-    # app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    # app.add_handler(CallbackQueryHandler(handle_callback))
-    # app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-    # app.run_polling()
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("onboard", onboard_command))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(CallbackQueryHandler(handle_callback))
+    app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
