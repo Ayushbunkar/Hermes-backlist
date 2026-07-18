@@ -388,7 +388,7 @@ def get_recent_scores(
             """
             SELECT * FROM site_score_history
             WHERE whitelist_site_id=%s
-              AND recorded_at >= datetime('now', %s || ' days')
+              AND recorded_at >= NOW() AT TIME ZONE 'UTC' + CAST(%s || ' days' AS INTERVAL)
             ORDER BY recorded_at DESC
             LIMIT %s
             """,
@@ -721,7 +721,7 @@ def mark_site_scanned_success(
             """
             UPDATE whitelist_sites
             SET last_scanned_at = timezone('utc', now()),
-                next_scan_due   = datetime('now', %s || ' minutes'),
+                next_scan_due   = NOW() AT TIME ZONE 'UTC' + CAST(%s || ' minutes' AS INTERVAL),
                 failure_count   = 0,
                 cooldown_until  = NULL,
                 status          = CASE WHEN status = 'cooldown' THEN 'active' ELSE status END
@@ -751,8 +751,8 @@ def mark_site_blocked(
             UPDATE whitelist_sites
             SET failure_count=%s,
                 last_scanned_at = timezone('utc', now()),
-                cooldown_until = datetime('now', %s || ' minutes'),
-                next_scan_due  = datetime('now', %s || ' minutes'),
+                cooldown_until = NOW() AT TIME ZONE 'UTC' + CAST(%s || ' minutes' AS INTERVAL),
+                next_scan_due  = NOW() AT TIME ZONE 'UTC' + CAST(%s || ' minutes' AS INTERVAL),
                 status         = 'cooldown'
             WHERE id=%s
             """,
@@ -899,7 +899,7 @@ def recover_stuck_drafted(
             "UPDATE harvest_leads SET status = 'GATED', run_id = NULL, "
             "updated_at = timezone('utc', now()) "
             "WHERE status = 'DRAFTED' "
-            "AND updated_at < datetime('now', %s)",
+            "AND updated_at < NOW() AT TIME ZONE 'UTC' + CAST(%s AS INTERVAL)",
             (f"-{int(minutes)} minutes",),
         )
         conn.commit()
@@ -1093,7 +1093,7 @@ def count_recent_leads(project_id: int, hours: int = 24, db_path: str = DEFAULT_
         row = conn.execute(
             """
             SELECT COUNT(*) AS n FROM harvest_leads
-            WHERE project_id=%s AND created_at >= datetime('now', %s || ' hours')
+            WHERE project_id=%s AND created_at >= NOW() AT TIME ZONE 'UTC' + CAST(%s || ' hours' AS INTERVAL)
             """,
             (project_id, f"-{hours}"),
         ).fetchone()
@@ -1253,7 +1253,7 @@ def get_rearm_candidates(
             WHERE h.project_id = %s
               AND COALESCE(s.editorial_locked, 0) = 0
               AND h.status IN ('SENT', 'REJECTED', 'GATED', 'SCORED', 'FAILED')
-              AND s.first_seen_at <= datetime('now', %s || ' days')
+              AND s.first_seen_at <= NOW() AT TIME ZONE 'UTC' + CAST(%s || ' days' AS INTERVAL)
             ORDER BY h.updated_at ASC
             LIMIT %s
             """,
