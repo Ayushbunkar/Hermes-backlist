@@ -6,7 +6,7 @@ import path from 'path';
 
 import os from 'os';
 
-let dbUrl = process.env.DATABASE_URL;
+let dbUrl = process.env.DATABASE_URL || process.env.SUPABASE_CONNECTION_STRING;
 
 if (!dbUrl) {
   const possiblePaths = [
