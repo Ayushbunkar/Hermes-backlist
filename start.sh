@@ -13,7 +13,10 @@ echo "-> Starting Telegram Router (Bot Listener)..."
 python workspace-bl-orchestrator/skills/pipeline/telegram_router.py &
 ROUTER_PID=$!
 
-# 2. Start the Nexus Daemon (Hunter) in the background
+# 2. Reset any failed leads and Start the Nexus Daemon (Hunter) in the background
+echo "-> Resetting any failed leads..."
+python reset_leads.py
+
 echo "-> Starting Nexus Daemon (Hunter)..."
 python workspace-bl-orchestrator/skills/pipeline/nexus_daemon.py &
 DAEMON_PID=$!
