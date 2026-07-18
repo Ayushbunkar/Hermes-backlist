@@ -153,7 +153,7 @@ export default function ProjectsPage() {
                                 <Search size={14} className="animate-pulse" />
                                 Live Search Queries
                               </div>
-                              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1 no-scrollbar">
                                 {queries.map((q: string, i: number) => (
                                   <span key={i} className="bg-gray-900 text-gray-300 text-xs px-2 py-1 rounded border border-gray-700 truncate max-w-[250px] hover:bg-gray-800 transition-colors">
                                     "{q}"
