@@ -55,6 +55,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 className="w-full bg-gray-950 border border-gray-800 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="admin@hermes.com"
+                suppressHydrationWarning
               />
             </div>
           </div>
@@ -70,6 +71,7 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 className="w-full bg-gray-950 border border-gray-800 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="••••••••"
+                suppressHydrationWarning
               />
             </div>
           </div>
