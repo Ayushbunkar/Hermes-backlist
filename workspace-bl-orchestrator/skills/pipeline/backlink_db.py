@@ -185,15 +185,7 @@ class ContentVersion:
 
 
 def _connect(db_path: str = None):
-    conn = psycopg2.connect(
-        os.environ.get("DATABASE_URL", "postgresql://postgres.mcbuijwyxmanqjjcanme:ayushbunkar100@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres%spgbouncer=true")
-    )
-    conn.autocommit = False
-    return conn
-    os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
-    conn = config.get_db_connection()
-    conn.row_factory = psycopg2.extras.DictRow
-    return conn
+    return config.get_db_connection()
 
 
 # Additive columns introduced after the original schema. Each is applied with

@@ -214,17 +214,7 @@ _COLUMN_MIGRATIONS: dict[str, dict[str, str]] = {
 
 
 def _connect(db_path: str = None):
-    conn = psycopg2.connect(
-        os.environ.get("DATABASE_URL", "postgresql://postgres.mcbuijwyxmanqjjcanme:ayushbunkar100@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres%spgbouncer=true")
-    )
-    conn.autocommit = False
-    return conn
-    os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
-    conn = config.get_db_connection()
-    conn.row_factory = psycopg2.extras.DictRow
-    conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("PRAGMA journal_mode=WAL")
-    conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor).execute("PRAGMA foreign_keys=ON")
-    return conn
+    return config.get_db_connection()
 
 
 def _run_column_migrations(conn: psycopg2.extensions.connection) -> None:
