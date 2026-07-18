@@ -118,31 +118,57 @@ def _raw_search(query: str, max_results: int, timelimit: str | None) -> list[dic
         print("[search_tool] TAVILY_API_KEY missing, fallback to empty", file=sys.stderr)
         return []
         
-    try:
-        resp = requests.post(
-            "https://api.tavily.com/search",
-            json={
-                "api_key": api_key,
-                "query": query,
-                "search_depth": "basic",
-                "max_results": max_results,
-            },
-            timeout=20
-        )
-        resp.raise_for_status()
-        data = resp.json()
+    include_domains = []
+    clean_query = query
+    if "site:" in query.lower():
+        parts = query.split()
+        new_parts = []
+        for p in parts:
+            if p.lower().startswith("site:"):
+                include_domains.append(p[5:])
+            else:
+                new_parts.append(p)
+        clean_query = " ".join(new_parts)
         
-        raw = []
-        for r in data.get("results", []):
-            raw.append({
-                "url": r.get("url"),
-                "title": r.get("title"),
-                "snippet": r.get("content")
-            })
-        return raw
-    except Exception as e:
-        print(f"[search_tool] Tavily search failed: {e}", file=sys.stderr)
-        return []
+    payload = {
+        "api_key": api_key,
+        "query": clean_query,
+        "search_depth": "basic",
+        "max_results": max_results,
+    }
+    if include_domains:
+        payload["include_domains"] = include_domains
+
+    retries = 3
+    for attempt in range(retries):
+        try:
+            resp = requests.post(
+                "https://api.tavily.com/search",
+                json=payload,
+                timeout=20
+            )
+            if resp.status_code == 429:
+                time.sleep(2 ** (attempt + 1))
+                continue
+                
+            resp.raise_for_status()
+            data = resp.json()
+            
+            raw = []
+            for r in data.get("results", []):
+                raw.append({
+                    "url": r.get("url"),
+                    "title": r.get("title"),
+                    "snippet": r.get("content")
+                })
+            return raw
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(2 ** (attempt + 1))
+            else:
+                print(f"[search_tool] Tavily search failed: {e}", file=sys.stderr)
+                
+    return []
 
 
 def _load_priority_order() -> list[str]:
