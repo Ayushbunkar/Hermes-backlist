@@ -15,8 +15,11 @@ if (!dbUrl) {
     path.resolve(process.cwd(), '.env'),
     path.resolve(process.cwd(), '../.env.local'),
     path.resolve(process.cwd(), '../.env'),
+    path.resolve(process.cwd(), '../../.env.local'),
+    path.resolve(process.cwd(), '../../.env'),
+    path.resolve(process.cwd(), '../../../.env'),
     path.resolve(os.homedir(), '.openclaw-backlink', '.env'),
-    path.resolve(os.homedir(), '.openclaw-backlink', '.env.local')
+    path.resolve(os.homedir(), '.env')
   ];
 
   for (const p of possiblePaths) {
