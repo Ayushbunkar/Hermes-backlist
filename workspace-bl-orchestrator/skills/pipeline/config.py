@@ -47,11 +47,15 @@ class PostgresSQLiteAdapter:
         sql = re.sub(r"datetime\('now',\s*'([^']+)'\)", r"NOW() AT TIME ZONE 'UTC' + INTERVAL '\1'", sql)
         sql = sql.replace("datetime('now')", "timezone('utc', now())")
         
+        is_ignore = "INSERT OR IGNORE" in sql
+        sql = sql.replace("INSERT OR IGNORE", "INSERT INTO")
         sql = sql.replace("INSERT OR REPLACE", "INSERT INTO")
         sql = sql.replace('?', '%s')
         sql = sql.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
         sql = sql.replace("PRAGMA journal_mode=WAL", "SELECT 1")
         sql = sql.replace("PRAGMA foreign_keys=ON", "SELECT 1")
+        if is_ignore and "ON CONFLICT" not in sql:
+            sql += " ON CONFLICT DO NOTHING"
         return sql
 
     def __enter__(self):
