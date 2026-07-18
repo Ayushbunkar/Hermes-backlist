@@ -91,3 +91,52 @@ def mine_project_vocab(
         if len(terms) >= limit:
             break
     return wdb.upsert_vocab_terms(project_id, terms, db_path=db_path)
+
+def seed_pdf_vocab_with_ai(project_id: int, pdf_text: str, db_path: str = None) -> int:
+    import urllib.request
+    import json
+    import whitelist_db as wdb
+    
+    db_path = db_path or wdb.DEFAULT_DB_PATH
+    base_url = os.environ.get("BIFROST_BASE_URL", "http://192.168.32.1:8888/v1")
+    model = os.environ.get("DEFAULT_MODEL", "vertex/gemini-3.1-flash-lite")
+    
+    # Take first 4000 characters to prevent huge payloads
+    text_sample = pdf_text[:4000]
+    
+    messages = [
+        {"role": "system", "content": "You are a vocabulary miner. Extract 10 highly relevant search keywords/phrases from the given document that people might search for on Reddit/Quora when they need this product. Return ONLY a comma-separated list of keywords without any quotes, numbering, or extra text."},
+        {"role": "user", "content": f"Document context:\n{text_sample}\n\nKeywords:"}
+    ]
+    
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.3,
+        "max_tokens": 500,
+    }
+    
+    try:
+        url = f"{base_url.rstrip('/')}/chat/completions"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Authorization": "Bearer dummy"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = resp.read().decode("utf-8")
+        data = json.loads(raw)
+        result = data["choices"][0]["message"]["content"]
+        
+        # Parse comma separated keywords
+        keywords = [k.strip().strip('"').strip("'") for k in result.split(",") if k.strip()]
+        
+        # Upsert vocab
+        terms = [(kw, 90.0, "pdf_ai_seed") for kw in keywords if len(kw) > 3][:15]
+        if terms:
+            return wdb.upsert_vocab_terms(project_id, terms, db_path=db_path)
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to seed PDF vocab: {e}")
+    return 0
