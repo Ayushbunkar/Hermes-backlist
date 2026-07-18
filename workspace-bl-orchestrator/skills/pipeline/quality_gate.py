@@ -46,8 +46,8 @@ _SYSTEM_PROMPT = (
     "Reward: on-topic discussions, recent activity. Penalize: spam, off-topic, listicles. "
     "Reject non-English content (score 0). "
     "You must ALSO estimate the business impact based on platform authority, topic, intent, and audience urgency. "
-    "Return STRICT JSON ONLY matching this exact schema:\\n"
-    "{\\"scores\\":[{\\"i\\":<index>,\\"score\\":<0-10 number>,\\"reason\\":\\"<short>\\",\\"impact\\":{\\"traffic\\":\\"<e.g. 12K>\\",\\"seo\\":\\"<Low/Medium/High>\\",\\"lead_quality\\":\\"<e.g. Excellent>\\",\\"business_impact\\":\\"<e.g. High>\\",\\"revenue\\":\\"<e.g. $4500>\\",\\"priority\\":\\"<Low/Medium/High>\\"}}]} \\n"
+    "Return STRICT JSON ONLY matching this exact schema:\n"
+    '{"scores":[{"i":<index>,"score":<0-10 number>,"reason":"<short>","impact":{"traffic":"<e.g. 12K>","seo":"<Low/Medium/High>","lead_quality":"<e.g. Excellent>","business_impact":"<e.g. High>","revenue":"<e.g. $4500>","priority":"<Low/Medium/High>"}}]}\n'
     "No prose outside the JSON."
 )
 
