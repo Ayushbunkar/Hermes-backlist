@@ -15,7 +15,7 @@ export async function GET() {
     let rejected = 0;
     let pending = 0;
     
-    statusResult.rows.forEach(row => {
+    statusResult.rows.forEach((row: any) => {
       if (row.status === 'approved') approved = parseInt(row.count);
       if (row.status === 'rejected') rejected = parseInt(row.count);
       if (row.status === 'pending') pending = parseInt(row.count);
