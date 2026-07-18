@@ -8,6 +8,9 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from pipeline_tz import now_sqlite
+import whitelist_db as wdb
+import backlink_db as bdb
 
 _SEARCH_DIR = os.path.dirname(os.path.abspath(__file__))
 _PIPELINE_DIR = os.path.abspath(os.path.join(_SEARCH_DIR, "..", "pipeline"))
@@ -56,6 +59,30 @@ def _save_cache(project_id: int, queries: list[str]) -> None:
     path = _cache_path(project_id)
     with open(path, "w", encoding="utf-8") as f:
         json.dump({"ts": time.time(), "queries": queries}, f, ensure_ascii=False)
+    
+    # Also save to PostgreSQL database for dashboard visibility
+    try:
+        import whitelist_db as wdb
+        import os
+        db_path = os.environ.get("BL_DB_PATH", os.path.expanduser("~/.openclaw-backlink/data/backlink.db"))
+        
+        with wdb._connect(db_path) as conn:
+            row = conn.execute("SELECT config_json FROM projects WHERE id = %s", (project_id,)).fetchone()
+            if row:
+                try:
+                    cfg = json.loads(row[0] or "{}")
+                except:
+                    cfg = {}
+                cfg["recent_queries"] = queries
+                cfg["last_query_time"] = time.time()
+                
+                conn.execute(
+                    "UPDATE projects SET config_json = %s WHERE id = %s",
+                    (json.dumps(cfg), project_id)
+                )
+                conn.commit()
+    except Exception as e:
+        print(f"Failed to save queries to db: {e}")
 
 
 def _call_llm(prompt: str, model: str, base_url: str, timeout: int) -> str:
