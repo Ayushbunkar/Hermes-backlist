@@ -20,7 +20,13 @@ DAEMON_PID=$!
 
 # 3. Start the Next.js Dashboard
 echo "-> Starting Next.js Dashboard..."
-cd workspace-dashboard && npm run dev &
+cd workspace-dashboard
+if [ ! -d "node_modules" ]; then
+    echo "-> Installing Dashboard dependencies (this will only happen once)..."
+    npm install
+fi
+npm run dev &
+cd ..
 DASHBOARD_PID=$!
 
 echo "========================================="
