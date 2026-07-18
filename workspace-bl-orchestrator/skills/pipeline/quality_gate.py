@@ -31,9 +31,9 @@ if _PIPELINE_DIR not in sys.path:
 from pipeline_tz import now_compact  # noqa: E402
 from pipeline_log import plog_info, plog_verbose, truncate  # noqa: E402
 
-DEFAULT_BASE_URL = os.environ.get("BIFROST_BASE_URL", "http://192.168.32.1:8888/v1")
-DEFAULT_MODEL = os.environ.get("BL_GATE_MODEL", "vertex/gemini-3.1-flash-lite")
-DEFAULT_MODEL_FALLBACK = os.environ.get("BL_GATE_MODEL_FALLBACK", "vertex/gemini-2.5-flash")
+DEFAULT_BASE_URL = os.environ.get("BIFROST_BASE_URL", "https://placing-reliability-container-oecd.trycloudflare.com/v1")
+DEFAULT_MODEL = os.environ.get("BL_GATE_MODEL", "ollama/qwen3-coder-next:latest")
+DEFAULT_MODEL_FALLBACK = os.environ.get("BL_GATE_MODEL_FALLBACK", "ollama/qwen3-coder-next:latest")
 DEFAULT_THRESHOLD = float(os.environ.get("BL_GATE_THRESHOLD", "6.0"))
 DEFAULT_TIMEOUT = int(os.environ.get("BL_GATE_TIMEOUT", "60"))
 GATE_USE_AGENT = os.environ.get("BL_GATE_USE_AGENT", "true").lower() in ("1", "true", "yes")
@@ -91,7 +91,7 @@ def _call_llm(
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Content-Type": "application/json",
-            "Authorization": "Bearer dummy",
+            "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY', 'sk-bf-b661f36a-47ed-429a-8ace-3554d8c57999')}",
         },
         method="POST",
     )
