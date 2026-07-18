@@ -146,7 +146,7 @@ export default function ProjectsPage() {
                     return (
                       <tr key={proj.id} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4">
-                          <span className="font-medium text-white block">{proj.project_url}</span>
+                          <span className="font-medium text-white block break-all">{proj.project_url}</span>
                           {queries.length > 0 && (
                             <div className="mt-3 bg-gray-950 border border-gray-800 rounded-lg p-3">
                               <div className="flex items-center gap-2 text-xs text-blue-400 font-medium mb-2">

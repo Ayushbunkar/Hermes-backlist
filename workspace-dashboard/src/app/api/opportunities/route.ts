@@ -9,10 +9,10 @@ export async function GET(request: Request) {
 
     const client = await pool.connect();
     
-    // Opportunities linked to user
-    const result = await client.query('SELECT * FROM opportunities WHERE user_id = $1 ORDER BY id DESC LIMIT 100', [session.id]);
+    // Opportunities (Global for now in V2)
+    const result = await client.query('SELECT * FROM opportunities ORDER BY id DESC LIMIT 100');
     
-    // Stats for user
+    // Stats
     const statsResult = await client.query(`
       SELECT 
         COUNT(*) as total,
@@ -20,8 +20,7 @@ export async function GET(request: Request) {
         COUNT(CASE WHEN status = 'APPROVED' OR status = 'GATED' THEN 1 END) as approved,
         COUNT(CASE WHEN status = 'REJECTED' THEN 1 END) as rejected
       FROM opportunities
-      WHERE user_id = $1
-    `, [session.id]);
+    `);
 
     client.release();
     return NextResponse.json({ 
