@@ -53,6 +53,9 @@ def load_json(path: str, default: dict | None = None) -> dict:
 
 
 def load_bot_token() -> str:
+    if os.environ.get("TELEGRAM_BOT_TOKEN"):
+        return str(os.environ.get("TELEGRAM_BOT_TOKEN")).strip()
+
     tg_cfg = load_json(TELEGRAM_CONFIG)
     token = str(tg_cfg.get("bot_token") or "").strip()
     if token:
@@ -677,7 +680,7 @@ def main() -> int:
             raise ValueError("Telegram bot token not found in telegram_card_config.json or openclaw.json")
 
         tg_cfg = load_json(TELEGRAM_CONFIG)
-        fallback_chat_id = str(tg_cfg.get("group_id") or "").strip()
+        fallback_chat_id = os.environ.get("TELEGRAM_CHAT_ID") or str(tg_cfg.get("group_id") or "").strip()
         chat_id = resolve_chat_id(project_url or None, fallback=fallback_chat_id)
         if not chat_id:
             raise ValueError("group_id missing in telegram_card_config.json and no project group set")
