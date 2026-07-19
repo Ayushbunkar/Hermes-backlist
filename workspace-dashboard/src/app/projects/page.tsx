@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal } from 'lucide-react';
+import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProjectsPage() {
@@ -98,6 +98,23 @@ export default function ProjectsPage() {
       console.error(err);
     }
     setAddingSource(false);
+  };
+
+  const handleDeleteProject = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) return;
+    
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMessage('Project deleted successfully.');
+        fetchProjects();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to delete project');
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
   };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -219,7 +236,16 @@ export default function ProjectsPage() {
                     return (
                       <tr key={proj.id} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4">
-                          <span className="font-medium text-white block break-all">{proj.project_url}</span>
+                          <div className="flex items-start justify-between gap-4">
+                            <span className="font-medium text-white block break-all">{proj.project_url}</span>
+                            <button 
+                              onClick={() => handleDeleteProject(proj.id)} 
+                              title="Delete Project"
+                              className="text-red-400 hover:text-red-300 hover:bg-red-900/30 p-1.5 rounded-lg transition-colors flex-shrink-0"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                           
                           {/* Sources UI */}
                           <div className="mt-4 pt-3 border-t border-gray-800">
