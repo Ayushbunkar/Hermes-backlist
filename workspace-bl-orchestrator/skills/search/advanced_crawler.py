@@ -6,6 +6,10 @@ import re
 import sys
 import urllib.parse
 from typing import Any
+try:
+    from seo_provider import get_provider
+except ImportError:
+    get_provider = None
 
 try:
     import requests
@@ -59,6 +63,10 @@ def crawl_url(url: str) -> dict:
         "full_html": "",
         "error": None,
         "title": "",
+        "domain_authority": None,
+        "domain_rating": None,
+        "organic_traffic": None,
+        "spam_score": None,
     }
     
     if not requests or not BeautifulSoup:
@@ -94,23 +102,34 @@ def crawl_url(url: str) -> dict:
             result["canonical_url"] = canonical.get("href")
 
         # Outbound links
-        parsed_url = urllib.parse.urlparse(url)
-        base_domain = parsed_url.netloc.replace("www.", "")
+        base_domain = urllib.parse.urlparse(url).netloc.replace("www.", "")
         
         outbound_count = 0
         for a_tag in soup.find_all("a", href=True):
             href = a_tag["href"]
-            if href.startswith("http"):
-                href_domain = urllib.parse.urlparse(href).netloc.replace("www.", "")
-                if href_domain and href_domain != base_domain:
-                    outbound_count += 1
+            if href and href.startswith("http"):
+                try:
+                    p = urllib.parse.urlparse(href)
+                    if p.netloc and base_domain not in p.netloc:
+                        outbound_count += 1
+                except Exception:
+                    pass
         result["outbound_link_count"] = outbound_count
-        
-        # Link Attributes & UGC Detection
+
+        # Dofollow/UGC checks
         dofollow, ugc, sponsored = _detect_dofollow_ugc(base_domain, html, soup)
         result["is_dofollow"] = dofollow
         result["is_ugc"] = ugc
         result["is_sponsored"] = sponsored
+        
+        # Inject SEO metrics via Provider
+        if get_provider:
+            try:
+                provider = get_provider()
+                metrics = provider.get_domain_metrics(base_domain)
+                result.update(metrics)
+            except Exception as e:
+                result["error"] = f"seo_provider failed: {e}"
 
     except Exception as e:
         result["error"] = str(e)
