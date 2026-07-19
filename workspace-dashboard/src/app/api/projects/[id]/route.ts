@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/auth';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-import os from 'os';
 
-const execAsync = promisify(exec);
+export const dynamic = 'force-dynamic';
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
@@ -20,7 +16,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   try {
     await client.query('BEGIN');
 
-    // Get the project URL before deleting (needed to delete from SQLite too)
+    // Get the project URL before deleting (needed for opportunities table)
     const projResult = await client.query('SELECT project_url FROM projects WHERE id = $1', [id]);
     const projectUrl = projResult.rows[0]?.project_url;
 
@@ -29,29 +25,40 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    // Delete related whitelist sites from PostgreSQL
+    // ── Delete in correct FK order ────────────────────────────────────────────
+
+    // 1. Tables that reference whitelist_sites
+    await client.query(
+      'DELETE FROM harvest_cursors WHERE whitelist_site_id IN (SELECT id FROM whitelist_sites WHERE project_id = $1)',
+      [id]
+    );
+    await client.query(
+      'DELETE FROM site_score_history WHERE whitelist_site_id IN (SELECT id FROM whitelist_sites WHERE project_id = $1)',
+      [id]
+    );
+    await client.query(
+      'DELETE FROM harvest_leads WHERE whitelist_site_id IN (SELECT id FROM whitelist_sites WHERE project_id = $1)',
+      [id]
+    );
+
+    // 2. whitelist_sites itself
     await client.query('DELETE FROM whitelist_sites WHERE project_id = $1', [id]);
 
-    // Delete the project from PostgreSQL
-    await client.query('DELETE FROM projects WHERE id = $1', [id]);
+    // 3. Tables that reference projects directly
+    await client.query('DELETE FROM harvest_leads WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM domain_candidates WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM pipeline_runs WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM query_stats WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM seen_opportunities WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM vocab_terms WHERE project_id = $1', [id]);
 
-    // Delete related opportunities if they exist based on URL
+    // 4. Opportunities (no FK, uses project_url string)
     await client.query('DELETE FROM opportunities WHERE project_url = $1', [projectUrl]);
 
-    await client.query('COMMIT');
+    // 5. Finally delete the project itself
+    await client.query('DELETE FROM projects WHERE id = $1', [id]);
 
-    // Also delete from SQLite (the daemon's source of truth) so it doesn't re-add the project
-    const sqliteDbPath = path.join(os.homedir(), '.openclaw-backlink', 'data', 'backlink.db');
-    const orchestratorPath = path.join(process.cwd(), '..', 'workspace-bl-orchestrator', 'skills', 'pipeline');
-    
-    try {
-      await execAsync(
-        `python -c "import sys; sys.path.insert(0, '${orchestratorPath.replace(/\\/g, '\\\\')}'); import whitelist_db; whitelist_db.delete_project('${projectUrl}', db_path='${sqliteDbPath.replace(/\\/g, '\\\\')}')"`
-      );
-    } catch (sqliteErr: any) {
-      // Log but don't fail - PostgreSQL delete was successful
-      console.warn('[DELETE project] SQLite delete warning:', sqliteErr.message);
-    }
+    await client.query('COMMIT');
 
     return NextResponse.json({ message: 'Project deleted successfully' });
   } catch (err: any) {
