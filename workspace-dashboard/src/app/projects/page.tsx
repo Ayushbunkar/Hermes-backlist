@@ -37,7 +37,7 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const res = await fetch('/api/projects');
+      const res = await fetch('/api/projects', { cache: 'no-store' });
       const data = await res.json();
       setProjects(data.data || []);
       setLoading(false);
@@ -107,18 +107,24 @@ export default function ProjectsPage() {
   };
 
   const executeDelete = async (id: number) => {
+    // Optimistically remove from UI immediately
+    setProjects(prev => prev.filter(p => p.id !== id));
+    setProjectToDelete(null);
+
     try {
       const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
       if (res.ok) {
         toast('success', 'Deleted', 'Project deleted successfully.');
-        setProjectToDelete(null);
-        fetchProjects();
       } else {
         const data = await res.json();
         toast('error', 'Delete Failed', data.error || 'Failed to delete project');
+        // Restore list if delete failed
+        fetchProjects();
       }
     } catch (e: any) {
       toast('error', 'Error', e.message);
+      // Restore list on network error
+      fetchProjects();
     }
   };
 
