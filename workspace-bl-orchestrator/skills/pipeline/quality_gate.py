@@ -40,14 +40,19 @@ GATE_USE_AGENT = os.environ.get("BL_GATE_USE_AGENT", "true").lower() in ("1", "t
 GATE_AGENT = os.environ.get("BL_GATE_AGENT", "bl-gate")
 PROFILE = os.environ.get("BL_PROFILE", "backlink")
 
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 _SYSTEM_PROMPT = (
     "You are a strict backlink-opportunity quality gate and business impact predictor. "
     "For each candidate thread, decide how good a fit it is for placing a genuinely helpful reply. "
     "Reward: on-topic discussions, recent activity. Penalize: spam, off-topic, listicles. "
     "Reject non-English content (score 0). "
-    "You must ALSO estimate the business impact based on platform authority, topic, intent, and audience urgency. "
+    "You must ALSO evaluate intent and spam markers based on the full text and SEO metrics provided. "
     "Return STRICT JSON ONLY matching this exact schema:\n"
-    '{"scores":[{"i":<index>,"score":<0-10 number>,"reason":"<short>","impact":{"traffic":"<e.g. 12K>","seo":"<Low/Medium/High>","lead_quality":"<e.g. Excellent>","business_impact":"<e.g. High>","revenue":"<e.g. $4500>","priority":"<Low/Medium/High>"}}]}\n'
+    '{"scores":[{"i":<index>,"score":<0-10 number>,"reason":"<short>","is_appropriate":<bool>,"is_spam":<bool>,"is_active":<bool>,"has_commercial_intent":<bool>,"reject_opportunity":<bool>,"discussion_intent":"<e.g. debugging/recommendation>","question_type":"<e.g. how-to>","impact":{"traffic":"<e.g. 12K>","seo":"<Low/Medium/High>","lead_quality":"<e.g. Excellent>","business_impact":"<e.g. High>","revenue":"<e.g. $4500>","priority":"<Low/Medium/High>"}}]}\n'
     "No prose outside the JSON."
 )
 
@@ -65,14 +70,33 @@ def _build_user_prompt(leads: list[dict], niche: str, project_desc: str) -> str:
     ]
     for i, lead in enumerate(leads):
         title = (lead.get("target_title") or "").strip()
-        excerpt = (lead.get("target_excerpt") or "").strip()[:400]
         url = lead.get("url") or ""
         fresh = lead.get("opportunity_freshness") or "unknown"
+        
+        # Extract full HTML from raw_json if possible, fallback to excerpt
+        raw_json_str = lead.get("raw_json", "{}")
+        try:
+            raw_dict = json.loads(raw_json_str) if isinstance(raw_json_str, str) else raw_json_str
+            html = raw_dict.get("raw_html", "")
+            if html and BeautifulSoup:
+                soup = BeautifulSoup(html, "html.parser")
+                text = soup.get_text(separator=" ", strip=True)
+                excerpt = text[:4000]
+            else:
+                excerpt = (lead.get("target_excerpt") or "").strip()[:1000]
+            
+            dofollow = raw_dict.get("is_dofollow", True)
+            obl = raw_dict.get("outbound_link_count", 0)
+        except Exception:
+            excerpt = (lead.get("target_excerpt") or "").strip()[:1000]
+            dofollow = True
+            obl = 0
+            
         lines.append(
-            f"[{i}] title: {title!r} | freshness: {fresh} | url: {url}\n     excerpt: {excerpt!r}"
+            f"[{i}] title: {title!r} | freshness: {fresh} | url: {url} | dofollow: {dofollow} | OBL: {obl}\n     text: {excerpt!r}"
         )
     lines.append("")
-    lines.append('Respond with JSON: {"scores":[{"i":0,"score":7.5,"reason":"..."}]}')
+    lines.append('Respond with JSON: {"scores":[{"i":0,"score":7.5,"reason":"...", "is_spam":false, ...}]}')
     return "\n".join(lines)
 
 
@@ -123,7 +147,14 @@ def _parse_scores(content: str, n: int) -> dict[int, dict]:
                 out[res_idx] = {
                     "score": max(0.0, min(10.0, score)),
                     "reason": reason[:200],
-                    "impact": impact
+                    "impact": impact,
+                    "is_appropriate": bool(item.get("is_appropriate", True)),
+                    "is_spam": bool(item.get("is_spam", False)),
+                    "is_active": bool(item.get("is_active", True)),
+                    "has_commercial_intent": bool(item.get("has_commercial_intent", False)),
+                    "reject_opportunity": bool(item.get("reject_opportunity", False)),
+                    "discussion_intent": str(item.get("discussion_intent", "")),
+                    "question_type": str(item.get("question_type", ""))
                 }
         except (KeyError, ValueError, TypeError):
             continue
@@ -140,8 +171,16 @@ def _apply_scores(leads: list[dict], scores: dict[int, dict], threshold: float) 
         else:
             lead["gate_score"] = judged["score"]
             lead["gate_reason"] = judged["reason"]
-            lead["business_impact"] = judged.get("impact")
-            lead["gate_passed"] = judged["score"] >= threshold
+            lead["impact"] = judged["impact"]
+            lead["discussion_intent"] = judged["discussion_intent"]
+            lead["question_type"] = judged["question_type"]
+            lead["has_commercial_intent"] = judged["has_commercial_intent"]
+            
+            if judged["reject_opportunity"] or judged["is_spam"]:
+                lead["gate_passed"] = False
+                lead["gate_reason"] = "rejected_by_ai: " + judged["reason"]
+            else:
+                lead["gate_passed"] = judged["score"] >= threshold
         plog_verbose(
             "gate", "gate_lead",
             url=truncate(lead.get("url") or "", 120),

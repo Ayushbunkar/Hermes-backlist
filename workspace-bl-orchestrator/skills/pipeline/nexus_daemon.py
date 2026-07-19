@@ -309,6 +309,9 @@ def phase_gate() -> None:
                     "gate_score": lead.get("gate_score"),
                     "gate_reason": (lead.get("gate_reason") or "")[:200],
                     "status": new_status,
+                    "discussion_intent": lead.get("discussion_intent"),
+                    "question_type": lead.get("question_type"),
+                    "buying_intent": "true" if lead.get("has_commercial_intent") else "false",
                 },
                 db_path=DB_PATH,
             )
