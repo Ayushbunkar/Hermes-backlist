@@ -11,6 +11,11 @@ from typing import Callable
 
 import whitelist_db as wdb
 
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 _PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
 if _PIPELINE_DIR not in sys.path:
     sys.path.insert(0, _PIPELINE_DIR)
@@ -49,6 +54,17 @@ def lead_to_opportunity(lead: dict) -> dict:
             raw = json.loads(lead["raw_json"])
         except (json.JSONDecodeError, TypeError):
             raw = {}
+    
+    # Extract clean text from raw_html for context
+    page_text = ""
+    html = raw.get("raw_html", "")
+    if html and BeautifulSoup:
+        try:
+            soup = BeautifulSoup(html, "html.parser")
+            page_text = soup.get_text(separator=" ", strip=True)[:4000]
+        except Exception:
+            pass
+            
     return {
         "url": lead["url"],
         "site_url": lead["url"],
@@ -58,6 +74,9 @@ def lead_to_opportunity(lead: dict) -> dict:
         "type": lead.get("type") or "forum",
         "target_title": lead.get("target_title") or "",
         "target_excerpt": lead.get("target_excerpt") or "",
+        "page_text": page_text, # Full extracted context
+        "discussion_intent": lead.get("discussion_intent") or "",
+        "question_type": lead.get("question_type") or "",
         "opportunity_context": lead.get("opportunity_context") or "",
         "opportunity_freshness": lead.get("opportunity_freshness") or "unknown",
         "posting_action": lead.get("posting_action") or "reply",
@@ -119,18 +138,24 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
         log(f"draft: Could not read queue {e}")
         
     task = (
-        "Follow your SOUL. Create submission-ready backlink content for each opportunity.\n"
+        "You are an expert SEO Content Writer and Community Member following Google's EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) guidelines.\n"
+        "Create submission-ready, highly valuable backlink content for each opportunity in the JSON queue.\n\n"
+        "RULES FOR EEAT AND NATURAL LINKING:\n"
+        "1. Experience: Write from a first-person perspective ('I had this issue', 'In my experience').\n"
+        "2. Value First: Provide an actionable, direct answer to the user's question BEFORE mentioning any link.\n"
+        "3. Natural Citation: Integrate the project link organically as a reference or tool you used, NOT as an advertisement.\n"
+        "4. Ban Spam: NEVER use phrases like 'Check out this link', 'I found a great tool', or 'Click here'.\n"
+        "5. Tone Match: Adjust your tone to match the 'discussion_intent' and 'question_type' of the thread.\n\n"
         f"RUN_DIR={run_dir}\n"
-        f"Here is the JSON list of opportunities to write content for:\n{queue_content}\n\n"
+        f"Queue (JSON list containing page_text, title, intent, etc.):\n{queue_content}\n\n"
         f"Project URL: {project['project_url']}\n"
         f"Niche: {project.get('niche') or ''}\n"
         f"Project name: {name}\n"
         f"Project description: {desc}\n"
-        f"Tone/style preference: {tone}\n"
+        f"Tone/style preference: {tone} (Adapt to discussion_intent as needed)\n"
         f"Manifest: {manifest_path}\n"
         f"Write all posts to: {posts_path}\n"
-        "Do not web_fetch blocked domains (reddit.com, x.com, twitter.com) — "
-        "use target_title and target_excerpt from the queue.\n"
+        "Do not web_fetch blocked domains (reddit.com, x.com, twitter.com) — use target_title, page_text, and target_excerpt.\n"
         "Each post's site_url MUST equal the opportunity url it answers.\n"
         "You MUST return a raw JSON object with this exact schema:\n"
         "{\n"
