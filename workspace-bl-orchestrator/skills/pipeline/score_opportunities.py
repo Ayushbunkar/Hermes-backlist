@@ -101,7 +101,7 @@ def _freshness_bonus(hours: float | None) -> float:
 
 
 def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None = None) -> float:
-    """Compute 0-100 per-opportunity score. Deterministic."""
+    """Compute 0-100 per-opportunity score. Professional SEO Scoring."""
     platform_weight = float(opp.get("platform_weight") or 0.55)
     freshness_str = str(opp.get("opportunity_freshness") or "")
     hours = _parse_recency_hours(freshness_str)
@@ -120,46 +120,52 @@ def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None 
         else:
             relevance = 5.0
 
-    platform_weight_score = platform_weight * 30
-    recency_part = _recency_score(hours) * 30
-    niche_overlap_part = (relevance / 10.0) * 20
-    host_usability_part = (host_usability / 100.0) * 10
-    freshness_bonus_part = _freshness_bonus(hours) * 10
+    # 1. Domain Metrics (40 points)
+    # Fallback to platform_weight if domain_authority is not present
+    da = opp.get("domain_authority")
+    if da is not None:
+        authority_score = (da / 100.0) * 40
+    else:
+        authority_score = platform_weight * 40
+        
+    # 2. Semantic Relevance (30 points)
+    relevance_score = (relevance / 10.0) * 30
+    
+    # 3. Link Quality (20 points)
+    is_dofollow = opp.get("is_dofollow", True)
+    obl = opp.get("outbound_link_count", 0)
+    
+    link_quality_base = 20 if is_dofollow else 10 # 50% penalty for nofollow
+    obl_penalty = min(10, obl / 10.0) # -1 point per 10 OBL, max 10 points lost
+    link_quality_score = max(0.0, link_quality_base - obl_penalty)
+    
+    # 4. Freshness (10 points)
+    freshness_score = _recency_score(hours) * 10
 
-    raw = platform_weight_score + recency_part + niche_overlap_part + host_usability_part + freshness_bonus_part
+    raw = authority_score + relevance_score + link_quality_score + freshness_score
     total_score = round(max(0.0, min(100.0, raw)), 2)
     
-    # Phase 2: Factor-driven AI Confidence Metric
-    # Weights: Relevance (35%), Authority (25%), Freshness (20%), Platform Reliability (20%)
-    relevance_conf = (niche_overlap_part / 20.0) * 35 if niche_overlap_part else 0
-    authority_conf = (platform_weight_score / 30.0) * 25 if platform_weight_score else 0
-    freshness_conf = (recency_part / 30.0) * 20 if recency_part else 0
-    usability_conf = (host_usability_part / 10.0) * 20 if host_usability_part else 0
-    
-    confidence = int(min(100, max(0, relevance_conf + authority_conf + freshness_conf + usability_conf)))
+    # Confidence Metric (re-weighted)
+    confidence = int(min(100, max(0, (relevance_score / 30 * 40) + (authority_score / 40 * 30) + (link_quality_score / 20 * 30))))
     
     breakdown = {
-        "recency": round(recency_part, 2),
-        "authority": round(platform_weight_score, 2),
-        "relevance": round(niche_overlap_part, 2),
-        "usability": round(host_usability_part, 2),
-        "freshness": round(freshness_bonus_part, 2)
+        "authority": round(authority_score, 2),
+        "relevance": round(relevance_score, 2),
+        "link_quality": round(link_quality_score, 2),
+        "freshness": round(freshness_score, 2)
     }
     
     reasoning = []
-    if recency_part >= 20:
-        reasoning.append("Highly recent discussion")
-    elif recency_part >= 10:
-        reasoning.append("Moderately active thread")
-        
-    if platform_weight_score >= 20:
-        reasoning.append("High authority platform")
-        
-    if niche_overlap_part >= 15:
-        reasoning.append("Strong match with niche")
-        
-    if freshness_bonus_part > 0:
-        reasoning.append("Ultra-fresh content bonus")
+    if authority_score >= 30:
+        reasoning.append("High Authority Domain")
+    if relevance_score >= 25:
+        reasoning.append("Strong semantic overlap")
+    if link_quality_score >= 15:
+        reasoning.append("High Link Equity (Dofollow, Low OBL)")
+    elif link_quality_score <= 10:
+        reasoning.append("Low Link Equity (Nofollow or High OBL)")
+    if freshness_score >= 8:
+        reasoning.append("Recent active discussion")
         
     if not reasoning:
         reasoning.append("Standard opportunity")
