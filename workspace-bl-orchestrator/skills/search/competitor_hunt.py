@@ -139,7 +139,7 @@ def hunt_competitors(
             if max_age_days is not None and hours is not None and hours > max_age_days * 24:
                 plog_trace("competitor", "search_skip", url=truncate(url, 120), reason="too_old")
                 continue
-            live, title, snippet = verify_and_enrich(url, title, snippet)
+            live, title, snippet, _ = verify_and_enrich(url, title, snippet)
             if not live:
                 plog_trace("competitor", "search_skip", url=truncate(url, 120), reason="dead_link")
                 continue

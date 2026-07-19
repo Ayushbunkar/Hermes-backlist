@@ -112,6 +112,8 @@ def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None 
         title = str(opp.get("target_title") or "")
         excerpt = str(opp.get("target_excerpt") or "")
         relevance = niche_overlap_score(title, excerpt, terms)
+        if relevance is None:
+            relevance = 5.0
         opp["relevance_score"] = relevance
     else:
         stored = opp.get("relevance_score")
@@ -132,8 +134,12 @@ def score_opportunity(opp: dict, host_usability: float, terms: list[str] | None 
     relevance_score = (relevance / 10.0) * 30
     
     # 3. Link Quality (20 points)
-    is_dofollow = opp.get("is_dofollow", True)
-    obl = opp.get("outbound_link_count", 0)
+    is_dofollow = opp.get("is_dofollow")
+    if is_dofollow is None:
+        is_dofollow = True
+    obl = opp.get("outbound_link_count")
+    if obl is None:
+        obl = 0
     
     link_quality_base = 20 if is_dofollow else 10 # 50% penalty for nofollow
     obl_penalty = min(10, obl / 10.0) # -1 point per 10 OBL, max 10 points lost

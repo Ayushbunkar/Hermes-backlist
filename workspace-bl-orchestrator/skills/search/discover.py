@@ -428,8 +428,8 @@ def discover(
 
         live: list[dict[str, Any]] = []
         for c in raw_candidates:
-            ok, title, excerpt = verify_and_enrich(
-                c["url"], c.get("target_title") or "", c.get("target_excerpt") or "",
+            ok, title, excerpt, _ = verify_and_enrich(
+                c["url"], c.get("target_title") or "", c.get("target_excerpt") or "", min_words=0
             )
             if not ok:
                 continue
