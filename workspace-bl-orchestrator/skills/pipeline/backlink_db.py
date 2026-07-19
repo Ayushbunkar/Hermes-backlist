@@ -292,7 +292,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
         posting_steps = str(posting_steps)
 
     with _connect(db_path) as conn:
-        conn.execute(
+        c = conn.execute(
             """
             INSERT INTO opportunities (
               run_id, alert_id, niche, project_url, project_name,
@@ -304,7 +304,7 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
               telegram_group, telegram_message_id, card_sent_at, run_dir, status,
               score_100, rank, score_breakdown, confidence, reasoning, business_impact,
               last_reminder, reminder_count, pending_since
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
             """,
             (
                 run_id,
@@ -350,8 +350,8 @@ def insert_opportunity(card: dict[str, Any], db_path: str = DEFAULT_DB_PATH) -> 
             ),
         )
         conn.commit()
-        row = conn.execute("SELECT last_insert_rowid()").fetchone()
-        return int(row[0])
+        row = c.fetchone()
+        return int(row[0]) if row and row[0] is not None else 0
 
 
 def set_status(opportunity_id: int, status: str, db_path: str = DEFAULT_DB_PATH) -> None:
