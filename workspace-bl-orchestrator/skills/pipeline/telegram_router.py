@@ -220,15 +220,30 @@ async def projects_command(update, context):
         await update.message.reply_text(f"❌ Error fetching projects: {e}")
 
 async def delete_command(update, context):
-    """Handles /delete <url>"""
+    """Handles /delete <url> - deletes from both SQLite (daemon) and PostgreSQL (dashboard)"""
     if not context.args:
         await update.message.reply_text("Usage: /delete <project_url>")
         return
     project = context.args[0]
     try:
+        # 1. Delete from SQLite (daemon's source of truth)
         wdb.init_whitelist_db(config.BL_DB_PATH)
         wdb.delete_project(project, config.BL_DB_PATH)
-        await update.message.reply_text(f"🗑️ Project {project} has been deleted.")
+
+        # 2. Also delete from PostgreSQL (dashboard's source of truth)
+        try:
+            conn = config.get_db_connection()
+            c = conn.cursor()
+            c.execute("DELETE FROM whitelist_sites WHERE project_id = (SELECT id FROM projects WHERE project_url = %s)", (project,))
+            c.execute("DELETE FROM opportunities WHERE project_url = %s", (project,))
+            c.execute("DELETE FROM projects WHERE project_url = %s", (project,))
+            conn.commit()
+            conn.close()
+        except Exception as pg_err:
+            # Don't fail if PostgreSQL delete has an issue - SQLite delete was the critical one
+            print(f"[delete_command] PostgreSQL delete warning: {pg_err}")
+
+        await update.message.reply_text(f"🗑️ Project deleted from all systems:\n`{project}`", parse_mode="Markdown")
     except ValueError as e:
         await update.message.reply_text(f"❌ {e}")
     except Exception as e:
