@@ -27,6 +27,10 @@ from compliance_engine import check_compliance  # noqa: E402
 from harvest_draft import draft_and_send  # noqa: E402
 from resend_pending import resend_one_opportunity  # noqa: E402
 import config
+import hermes_client
+
+# Phase 10: Health metrics
+_consecutive_errors = 0
 
 DB_PATH = os.environ.get("BL_DB_PATH", config.BL_DB_PATH)
 AIR_GAP_SECONDS = int(os.environ.get("BL_AIR_GAP_SECONDS", "30"))
@@ -538,13 +542,19 @@ def tick() -> None:
     phase_names = [p[0] for p in phases]
     plog_verbose("tick", "tick_start", tick=_tick_counter, phases=",".join(phase_names))
     tick_start = time.time()
+    global _consecutive_errors
     for name, fn in phases:
         phase_start = time.time()
         plog_trace("tick", "phase_begin", phase=name)
         try:
             fn()
+            _consecutive_errors = 0
         except Exception as e:  # noqa: BLE001
             log(f"{name}: UNCAUGHT ERROR {e}")
+            _consecutive_errors += 1
+            if _consecutive_errors >= 5:
+                hermes_client.notify_telegram("⚠️ *EMERGENCY: DAEMON FAILING*", f"The Nexus Daemon has encountered 5 consecutive uncaught errors. Latest error in phase `{name}`: `{e}`")
+                _consecutive_errors = 0  # reset to avoid spamming
         plog_trace(
             "tick", "phase_end",
             phase=name, duration_ms=int((time.time() - phase_start) * 1000),
@@ -585,6 +595,18 @@ def main() -> int:
             
         tick()
         ticks += 1
+        
+        # Phase 10: Daemon Heartbeat
+        try:
+            with open(".daemon_heartbeat.json", "w", encoding="utf-8") as hf:
+                json.dump({
+                    "last_tick_time": time.time(),
+                    "total_ticks": ticks,
+                    "status": "alive"
+                }, hf)
+        except Exception as e:
+            log(f"failed to write heartbeat: {e}")
+            
         if args.once or (args.max_ticks and ticks >= args.max_ticks):
             log(f"daemon stop after {ticks} tick(s)")
             return 0

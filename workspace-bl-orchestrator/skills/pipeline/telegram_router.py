@@ -272,7 +272,44 @@ async def stats_command(update, context):
         await update.message.reply_text(msg)
         conn.close()
     except Exception as e:
-        await update.message.reply_text(f"❌ Error fetching stats: {e}")
+        await update.message.reply_text(msg, parse_mode="Markdown")
+
+
+async def health_command(update, context):
+    """Phase 10: Reports daemon health based on heartbeat file."""
+    import json, time, os
+    try:
+        # Assuming run directory is the same as where daemon_heartbeat is written (project root)
+        hb_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".daemon_heartbeat.json")
+        # Wait, nexus_daemon runs with cwd as the root usually, let's just use absolute path to repo root or cwd.
+        # Actually, let's just try '.daemon_heartbeat.json' first since telegram_router and nexus_daemon should run from the same cwd.
+        if not os.path.exists(".daemon_heartbeat.json"):
+            hb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".daemon_heartbeat.json")
+            if not os.path.exists(hb_path):
+                hb_path = ".daemon_heartbeat.json" # Fallback
+        else:
+            hb_path = ".daemon_heartbeat.json"
+            
+        with open(hb_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        last_tick = data.get("last_tick_time", 0)
+        ago = int(time.time() - last_tick)
+        status = data.get("status", "unknown")
+        ticks = data.get("total_ticks", 0)
+        
+        msg = (
+            "🩺 *Daemon Health Status*\n"
+            f"Status: `{status}`\n"
+            f"Last Tick: `{ago} seconds ago`\n"
+            f"Total Ticks Processed: `{ticks}`"
+        )
+        if ago > 300: # 5 minutes
+            msg += "\n\n⚠️ *WARNING*: Daemon has not updated heartbeat in over 5 minutes. It may have crashed."
+    except Exception as e:
+        msg = f"❌ *Failed to read heartbeat*: `{e}`\nIs the daemon running?"
+        
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
 
 def main():
     logger.info("Starting native Python Telegram Webhook Receiver...")
@@ -283,6 +320,7 @@ def main():
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("scan", scan_command))
     app.add_handler(CommandHandler("stats", stats_command))
+    app.add_handler(CommandHandler("health", health_command))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
