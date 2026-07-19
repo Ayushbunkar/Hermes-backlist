@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""compliance_engine.py — Google Guidelines Compliance Engine."""
+
+import json
+
+def check_compliance(lead: dict) -> tuple[bool, str]:
+    """
+    Evaluates a lead against strict Google Spam Policies.
+    Returns (True, "") if compliant.
+    Returns (False, "reason") if it violates guidelines.
+    """
+    raw_json_str = lead.get("raw_json", "{}")
+    try:
+        raw_dict = json.loads(raw_json_str) if isinstance(raw_json_str, str) else raw_json_str
+    except Exception:
+        raw_dict = {}
+
+    obl = int(raw_dict.get("outbound_link_count", 0))
+    is_dofollow = raw_dict.get("is_dofollow", True)
+    
+    # Extract calculated metrics from score_opportunities (if available)
+    breakdown = lead.get("score_breakdown", {})
+    relevance = breakdown.get("relevance", 0.0)
+    authority = breakdown.get("authority", 0.0)
+    
+    # RULE 1: Link Farm Detection
+    # If OBL > 100 on a dofollow page, it's highly likely a link farm or spam board
+    if obl > 100 and is_dofollow:
+        return False, f"compliance_failure: excessive_obl ({obl} links)"
+        
+    # RULE 2: Relevance Threshold
+    # If the score_opportunities engine gave it < 10 points out of 30 for semantic relevance, it's off-topic
+    if relevance < 10.0:
+        return False, f"compliance_failure: off_topic (relevance {relevance}/30)"
+        
+    # RULE 3: Authority Floor
+    # If the domain authority/weight is < 5 out of 40, it's not worth placing
+    if authority < 5.0:
+        return False, f"compliance_failure: low_authority (auth {authority}/40)"
+        
+    return True, ""

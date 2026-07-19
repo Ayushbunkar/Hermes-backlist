@@ -21,8 +21,9 @@ from harvester_registry import harvest_site, STATUS_OK, STATUS_BLOCKED  # noqa: 
 from rearm_leads import process_rearm  # noqa: E402
 from vocab_miner import mine_project_vocab  # noqa: E402
 from harvesters._common import extract_domains_from_text  # noqa: E402
-from score_opportunities import score_opportunity  # noqa: E402
 from quality_gate import gate_leads  # noqa: E402
+from score_opportunities import score_opportunity  # noqa: E402
+from compliance_engine import check_compliance  # noqa: E402
 from harvest_draft import draft_and_send  # noqa: E402
 from resend_pending import resend_one_opportunity  # noqa: E402
 import config
@@ -257,15 +258,17 @@ def phase_score() -> None:
             match = next((p for p in proj if p["id"] == pid), None)
             project_terms_cache[pid] = _project_terms(match or {"niche": ""}, _project_config(match or {}))
         terms = project_terms_cache.get(pid, [])
-        opp = {
-            "platform_weight": lead.get("platform_weight"),
-            "relevance_score": lead.get("relevance_score"),
-            "opportunity_freshness": lead.get("opportunity_freshness"),
-            "target_title": lead.get("target_title"),
-            "target_excerpt": lead.get("target_excerpt"),
-        }
+        # Pass the full lead dictionary to score_opportunity so it has access to SEO metrics
+        # and it will mutate the dict to add score_breakdown, confidence, reasoning
+        opp = dict(lead)
         score = score_opportunity(opp, usability_cache[ckey], terms=terms or None)
         rel = opp.get("relevance_score")
+        
+        # Merge the mutated breakdown back into the lead so compliance engine can see it
+        lead["score_breakdown"] = opp.get("score_breakdown", {})
+        lead["confidence"] = opp.get("confidence", 0)
+        lead["reasoning"] = opp.get("reasoning", [])
+        lead["score_100"] = score
         wdb.update_lead(
             lead["id"],
             {"score_100": score, "status": "SCORED", "relevance_score": rel},
@@ -288,6 +291,24 @@ def phase_gate() -> None:
         pid = project["id"]
         scored = wdb.get_leads_by_status("SCORED", limit=GATE_TOP_N, project_id=pid, db_path=DB_PATH)
         scored = [l for l in scored if (l.get("score_100") or 0) >= SCORE_FLOOR]
+        
+        # Phase 6: Google Guidelines Compliance Engine
+        compliant_leads = []
+        for l in scored:
+            is_compliant, reason = check_compliance(l)
+            if is_compliant:
+                compliant_leads.append(l)
+            else:
+                # Mark as rejected immediately
+                wdb.update_lead(
+                    l["id"],
+                    {"status": "REJECTED", "gate_reason": reason, "gate_score": 0.0},
+                    db_path=DB_PATH
+                )
+                plog_verbose("compliance", "lead_rejected", lead_id=l["id"], reason=reason)
+                
+        scored = compliant_leads
+        
         if not scored:
             continue
         cfg = _project_config(project)
