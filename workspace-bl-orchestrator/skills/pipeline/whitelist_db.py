@@ -836,8 +836,9 @@ def insert_leads(
                       project_id, whitelist_site_id, url, url_key, domain, type,
                       target_title, target_excerpt, opportunity_context, opportunity_freshness,
                       posting_action, platform, platform_weight, credibility_tier,
-                      relevance_score, recency_score, status, raw_json
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'NEW', %s)
+                      relevance_score, recency_score, status, raw_json,
+                      page_language, has_canonical, is_dofollow, is_ugc, is_sponsored, outbound_link_count
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'NEW', %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT(project_id, url_key) DO NOTHING
                     """,
                     (
@@ -849,6 +850,9 @@ def insert_leads(
                         lead.get("platform_weight"), lead.get("credibility_tier"),
                         lead.get("relevance_score"), lead.get("recency_score"),
                         json.dumps(lead, ensure_ascii=False),
+                        lead.get("page_language"), lead.get("has_canonical"),
+                        lead.get("is_dofollow"), lead.get("is_ugc"),
+                        lead.get("is_sponsored"), lead.get("outbound_link_count")
                     ),
                 )
                 if cur.rowcount:

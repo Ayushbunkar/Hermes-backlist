@@ -106,7 +106,7 @@ def _parse_search_results(
         if max_age_days is not None and hours is not None and hours > max_age_days * 24:
             _log_skip(url, "too_old")
             continue
-        live, title, snippet = verify_and_enrich(url, title, snippet)
+        live, title, snippet, seo_metrics = verify_and_enrich(url, title, snippet)
         if not live:
             _log_skip(url, "dead_link")
             continue
@@ -133,6 +133,13 @@ def _parse_search_results(
             "credibility_tier": credibility_tier,
             "relevance_score": rel,
             "recency_score": recency_score(hours),
+            "page_language": seo_metrics.get("page_language"),
+            "has_canonical": seo_metrics.get("has_canonical", False),
+            "is_dofollow": seo_metrics.get("is_dofollow", True),
+            "is_ugc": seo_metrics.get("is_ugc", False),
+            "is_sponsored": seo_metrics.get("is_sponsored", False),
+            "outbound_link_count": seo_metrics.get("outbound_link_count", 0),
+            "raw_html": seo_metrics.get("full_html", ""),
         })
     return out
 
