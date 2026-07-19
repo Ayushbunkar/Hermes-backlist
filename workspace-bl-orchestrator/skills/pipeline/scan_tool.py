@@ -110,6 +110,18 @@ def _parse_search_results(
         if not live:
             _log_skip(url, "dead_link")
             continue
+            
+        # Phase 9: Advanced Duplicate & Canonical Detection
+        canonical_url = seo_metrics.get("canonical_url")
+        if seo_metrics.get("has_canonical") and canonical_url:
+            canonical_key = url_key(canonical_url)
+            if canonical_key in seen or canonical_key in skip_keys:
+                _log_skip(url, "duplicate_canonical")
+                continue
+            seen.add(canonical_key)
+            url = canonical_url
+            key = canonical_key
+            
         rel = niche_overlap_score(title, snippet, terms) if terms else None
         plog_verbose(
             "scan", "search_hit",
