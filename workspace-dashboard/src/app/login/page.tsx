@@ -4,16 +4,16 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Activity, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ToastProvider';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -22,9 +22,12 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      window.location.href = '/';
+      toast('success', 'Welcome Back', 'Logged in successfully.');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     } catch (err: any) {
-      setError(err.message);
+      toast('error', 'Login Failed', err.message || 'Invalid credentials');
     }
   };
 
@@ -75,8 +78,6 @@ export default function LoginPage() {
               />
             </div>
           </div>
-
-          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
           <button 
             type="submit"

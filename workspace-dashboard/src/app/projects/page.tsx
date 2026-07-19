@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/components/ToastProvider';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -15,6 +16,8 @@ export default function ProjectsPage() {
   const [sourceDomain, setSourceDomain] = useState('');
   const [addingSource, setAddingSource] = useState(false);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const fetchActivity = async () => {
     try {
@@ -65,15 +68,15 @@ export default function ProjectsPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage('Project added successfully! The orchestrator will begin scanning shortly.');
+        toast('success', 'Project Added', 'The orchestrator will begin scanning shortly.');
         setUrl('');
         setNiche('');
         fetchProjects(); // refresh list
       } else {
-        setError(data.error || 'Failed to add project');
+        toast('error', 'Failed to add project', data.error || 'Unknown error');
       }
     } catch (e: any) {
-      setError(e.message);
+      toast('error', 'Error', e.message);
     }
     setAdding(false);
   };
@@ -90,38 +93,78 @@ export default function ProjectsPage() {
         body: JSON.stringify({ domain: sourceDomain, site_type: 'forum' })
       });
       if (res.ok) {
+        toast('success', 'Source Added', `Added ${sourceDomain} to whitelist.`);
         setSourceDomain('');
         setActiveProject(null);
         fetchProjects();
+      } else {
+        toast('error', 'Failed', 'Failed to add source');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast('error', 'Error', err.message);
     }
     setAddingSource(false);
   };
 
-  const handleDeleteProject = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) return;
-    
+  const executeDelete = async (id: number) => {
     try {
       const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setMessage('Project deleted successfully.');
+        toast('success', 'Deleted', 'Project deleted successfully.');
+        setProjectToDelete(null);
         fetchProjects();
       } else {
         const data = await res.json();
-        setError(data.error || 'Failed to delete project');
+        toast('error', 'Delete Failed', data.error || 'Failed to delete project');
       }
     } catch (e: any) {
-      setError(e.message);
+      toast('error', 'Error', e.message);
     }
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setProjectToDelete(id);
   };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8 relative">
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {projectToDelete && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+            >
+              <h3 className="text-xl font-semibold text-white mb-2">Delete Project?</h3>
+              <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+                Are you sure you want to delete this project? This action cannot be undone and will remove all associated whitelist sources and analytics data.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setProjectToDelete(null)} 
+                  className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => executeDelete(projectToDelete)} 
+                  className="px-4 py-2 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors shadow-lg shadow-red-900/20"
+                >
+                  Yes, Delete Project
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div>
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <Globe className="text-blue-500" size={28} />
@@ -162,19 +205,7 @@ export default function ProjectsPage() {
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-white mb-4">Track New Project</h2>
-        
-        {message && (
-          <div className="mb-4 bg-green-900/30 border border-green-800 text-green-400 px-4 py-3 rounded-lg flex items-center gap-2">
-            <AlertCircle size={18} /> {message}
-          </div>
-        )}
-        
-        {error && (
-          <div className="mb-4 bg-red-900/30 border border-red-800 text-red-400 px-4 py-3 rounded-lg flex items-center gap-2">
-            <AlertCircle size={18} /> {error}
-          </div>
-        )}
+        <h2 className="text-xl font-semibold text-white mb-6">Track New Project</h2>
 
         <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
@@ -239,7 +270,7 @@ export default function ProjectsPage() {
                           <div className="flex items-start justify-between gap-4">
                             <span className="font-medium text-white block break-all">{proj.project_url}</span>
                             <button 
-                              onClick={() => handleDeleteProject(proj.id)} 
+                              onClick={() => handleDeleteClick(proj.id)} 
                               title="Delete Project"
                               className="text-red-400 hover:text-red-300 hover:bg-red-900/30 p-1.5 rounded-lg transition-colors flex-shrink-0"
                             >
