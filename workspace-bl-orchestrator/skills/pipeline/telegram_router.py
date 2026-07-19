@@ -1,6 +1,8 @@
 import os
 import config
 import logging
+import whitelist_db as wdb
+import backlink_db as bdb
 
 try:
     from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -180,10 +182,107 @@ async def handle_document(update, context):
         logger.info(f"Received document upload with ID: {file_id}")
         await update.message.reply_text("File upload received and routed natively via Hermes.")
 
+async def add_command(update, context):
+    """Handles /add <url> <niche>"""
+    if not context.args:
+        await update.message.reply_text("Usage: /add <project_url> [niche]")
+        return
+    project = context.args[0]
+    niche = " ".join(context.args[1:]) if len(context.args) > 1 else "auto"
+    
+    try:
+        wdb.init_whitelist_db(config.BL_DB_PATH)
+        name = project.split("://")[-1] if "://" in project else project
+        pid = wdb.upsert_project(project, niche=niche, name=name)
+        
+        default_sites = ["reddit.com", "news.ycombinator.com", "bitcointalk.org"]
+        for site in default_sites:
+            wdb.upsert_whitelist_site(pid, site, added_by="seed", db_path=config.BL_DB_PATH)
+            
+        await update.message.reply_text(f"✅ Project {project} added successfully! Niche set to: {niche}. Tracking started.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error adding project: {e}")
+
+async def projects_command(update, context):
+    """Handles /projects"""
+    try:
+        wdb.init_whitelist_db(config.BL_DB_PATH)
+        projects = wdb.get_active_projects(config.BL_DB_PATH)
+        if not projects:
+            await update.message.reply_text("No active projects found.")
+            return
+        
+        msg = "📊 Active Projects:\n\n"
+        for p in projects:
+            msg += f"🔹 {p['project_url']}\n   Niche: {p['niche']}\n"
+        await update.message.reply_text(msg)
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error fetching projects: {e}")
+
+async def delete_command(update, context):
+    """Handles /delete <url>"""
+    if not context.args:
+        await update.message.reply_text("Usage: /delete <project_url>")
+        return
+    project = context.args[0]
+    try:
+        wdb.init_whitelist_db(config.BL_DB_PATH)
+        wdb.delete_project(project, config.BL_DB_PATH)
+        await update.message.reply_text(f"🗑️ Project {project} has been deleted.")
+    except ValueError as e:
+        await update.message.reply_text(f"❌ {e}")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error deleting project: {e}")
+
+async def scan_command(update, context):
+    """Handles /scan"""
+    try:
+        wdb.init_whitelist_db(config.BL_DB_PATH)
+        projects = wdb.get_active_projects(config.BL_DB_PATH)
+        total_due = 0
+        for p in projects:
+            total_due += wdb.set_project_sites_due_now(p["id"], config.BL_DB_PATH)
+        
+        await update.message.reply_text(f"🔍 Scan triggered! Marked {total_due} sources as due now. The orchestrator will pick them up shortly.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error triggering scan: {e}")
+
+async def stats_command(update, context):
+    """Handles /stats"""
+    try:
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        
+        wdb.init_whitelist_db(config.BL_DB_PATH)
+        projects = wdb.get_active_projects(config.BL_DB_PATH)
+        
+        c.execute("SELECT status, count(*) FROM harvest_leads GROUP BY status")
+        rows = c.fetchall()
+        
+        stats = {r["status"]: r["count"] for r in rows}
+        total = sum(stats.values())
+        
+        msg = "📈 Hermes Global Stats\n\n"
+        msg += f"Active Projects: {len(projects)}\n"
+        msg += f"Total Leads Found: {total}\n"
+        msg += f"Approved & Drafted: {stats.get('DRAFTED', 0) + stats.get('SENT', 0)}\n"
+        msg += f"Pending Review: {stats.get('SCORED', 0) + stats.get('GATED', 0)}\n"
+        msg += f"Rejected: {stats.get('REJECTED', 0)}\n"
+        
+        await update.message.reply_text(msg)
+        conn.close()
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error fetching stats: {e}")
+
 def main():
     logger.info("Starting native Python Telegram Webhook Receiver...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("onboard", onboard_command))
+    app.add_handler(CommandHandler("add", add_command))
+    app.add_handler(CommandHandler("projects", projects_command))
+    app.add_handler(CommandHandler("delete", delete_command))
+    app.add_handler(CommandHandler("scan", scan_command))
+    app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
