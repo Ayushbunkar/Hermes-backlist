@@ -49,6 +49,14 @@ CREATE TABLE IF NOT EXISTS projects (
   telegram_group_id   TEXT,                       -- per-project Telegram supergroup
   telegram_group_name TEXT,
   card_prefix         TEXT,                       -- optional card label prefix
+  domain_authority    INTEGER,
+  domain_rating       INTEGER,
+  trust_flow          INTEGER,
+  citation_flow       INTEGER,
+  organic_keywords    INTEGER,
+  organic_traffic     INTEGER,
+  referring_domains   INTEGER,
+  indexed_pages       INTEGER,
   created_at  TEXT    DEFAULT (timezone('utc', now()))
 );
 
@@ -65,6 +73,13 @@ CREATE TABLE IF NOT EXISTS whitelist_sites (
   failure_count         INTEGER NOT NULL DEFAULT 0,         -- consecutive block/empty count
   cooldown_until        TEXT,                               -- if set and in future, site is resting
   scan_priority         INTEGER NOT NULL DEFAULT 50,       -- higher = scan first (never evicts)
+  domain_authority      INTEGER,
+  domain_rating         INTEGER,
+  trust_flow            INTEGER,
+  citation_flow         INTEGER,
+  organic_keywords      INTEGER,
+  organic_traffic       INTEGER,
+  referring_domains     INTEGER,
   UNIQUE(project_id, domain)
 );
 CREATE INDEX IF NOT EXISTS idx_wl_project_status ON whitelist_sites(project_id, status);
@@ -93,6 +108,25 @@ CREATE TABLE IF NOT EXISTS harvest_leads (
   status               TEXT NOT NULL DEFAULT 'NEW',  -- NEW | SCORED | GATED | REJECTED | DRAFTED | SENT | FAILED
   run_id               TEXT,
   raw_json             TEXT,
+  url_rating           INTEGER,
+  page_authority       INTEGER,
+  estimated_traffic    INTEGER,
+  page_language        TEXT,
+  country              TEXT,
+  page_age_days        INTEGER,
+  is_dofollow          BOOLEAN,
+  is_sponsored         BOOLEAN,
+  is_ugc               BOOLEAN,
+  is_redirect          BOOLEAN,
+  has_canonical        BOOLEAN,
+  anchor_text          TEXT,
+  link_position        TEXT,
+  outbound_link_count  INTEGER,
+  discussion_intent    TEXT,
+  question_type        TEXT,
+  buying_intent        TEXT,
+  engagement_score     REAL,
+  comment_count        INTEGER,
   created_at           TEXT DEFAULT (timezone('utc', now())),
   updated_at           TEXT DEFAULT (timezone('utc', now())),
   UNIQUE(project_id, url_key)
