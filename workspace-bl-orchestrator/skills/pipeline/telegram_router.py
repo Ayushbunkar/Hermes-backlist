@@ -56,6 +56,20 @@ async def handle_message(update, context):
             
             await update.message.reply_text(f"Project URL set to {project_url}.", reply_markup=reply_markup)
         conn.commit()
+    else:
+        import subprocess
+        import sys
+        import os
+        script_path = os.path.join(os.path.dirname(__file__), "handle_card_feedback.py")
+        subprocess.Popen([
+            sys.executable,
+            script_path,
+            "--message-text", update.message.text,
+            "--chat-id", str(chat_id),
+            "--user-id", str(user_id),
+            "--username", update.effective_user.username or "",
+            "--reply-to-message-id", str(update.message.message_id)
+        ])
     conn.close()
 
 async def handle_callback(update, context):
@@ -93,6 +107,20 @@ async def handle_callback(update, context):
             conn.close()
             
         await query.edit_message_text(text=f"Project {project} formally confirmed and initialized via Hermes!")
+    elif query.data.startswith("bl_"):
+        import subprocess
+        import sys
+        import os
+        script_path = os.path.join(os.path.dirname(__file__), "handle_card_feedback.py")
+        subprocess.Popen([
+            sys.executable,
+            script_path,
+            "--payload", query.data,
+            "--chat-id", str(update.effective_chat.id),
+            "--user-id", str(update.effective_user.id),
+            "--username", update.effective_user.username or "",
+            "--reply-to-message-id", str(query.message.message_id)
+        ])
 
 async def handle_document(update, context):
     """Handles file uploads (e.g., config jsons, PDFs)."""
