@@ -1,8 +1,21 @@
 import os
+import sys
 import config
 import logging
 import whitelist_db as wdb
 import backlink_db as bdb
+
+# V2.0 Relevancy Engine imports
+try:
+    _SEARCH_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'search'))
+    if _SEARCH_DIR not in sys.path:
+        sys.path.insert(0, _SEARCH_DIR)
+    from trend_ingestion import ingest_trends
+    from sitemap_scanner import scan_project_sitemap
+    from relevancy_engine import generate_relevancy_map, get_project_sitemap, get_latest_trend
+    _V2_ENABLED = True
+except ImportError:
+    _V2_ENABLED = False
 
 try:
     from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -294,14 +307,10 @@ async def health_command(update, context):
     """Phase 10: Reports daemon health based on heartbeat file."""
     import json, time, os
     try:
-        # Assuming run directory is the same as where daemon_heartbeat is written (project root)
-        hb_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".daemon_heartbeat.json")
-        # Wait, nexus_daemon runs with cwd as the root usually, let's just use absolute path to repo root or cwd.
-        # Actually, let's just try '.daemon_heartbeat.json' first since telegram_router and nexus_daemon should run from the same cwd.
         if not os.path.exists(".daemon_heartbeat.json"):
             hb_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".daemon_heartbeat.json")
             if not os.path.exists(hb_path):
-                hb_path = ".daemon_heartbeat.json" # Fallback
+                hb_path = ".daemon_heartbeat.json"
         else:
             hb_path = ".daemon_heartbeat.json"
             
@@ -313,22 +322,144 @@ async def health_command(update, context):
         ticks = data.get("total_ticks", 0)
         
         msg = (
-            "🩺 *Daemon Health Status*\n"
+            "*Daemon Health Status*\n"
             f"Status: `{status}`\n"
             f"Last Tick: `{ago} seconds ago`\n"
             f"Total Ticks Processed: `{ticks}`"
         )
-        if ago > 300: # 5 minutes
-            msg += "\n\n⚠️ *WARNING*: Daemon has not updated heartbeat in over 5 minutes. It may have crashed."
+        if ago > 300:
+            msg += "\n\nWARNING: Daemon has not updated heartbeat in over 5 minutes. It may have crashed."
     except Exception as e:
-        msg = f"❌ *Failed to read heartbeat*: `{e}`\nIs the daemon running?"
+        msg = f"Failed to read heartbeat: `{e}`\nIs the daemon running?"
         
     await update.message.reply_text(msg, parse_mode="Markdown")
+
+
+# ── V2.0 Telegram Commands ───────────────────────────────────────────────────
+
+async def trends_command(update, context):
+    """V2.0: /trends - Show today's top global trending topics."""
+    if not _V2_ENABLED:
+        await update.message.reply_text("V2 Trend Engine not available on this server.")
+        return
+    try:
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT trend_query, discovered_at FROM daily_trends WHERE status = 'active' ORDER BY discovered_at DESC LIMIT 10")
+        rows = c.fetchall()
+        conn.close()
+        if not rows:
+            await update.message.reply_text("No trends found. Run /ingesttrends to fetch fresh data.")
+            return
+        msg = "*Today's Global Trends (V2.0)*\n\n"
+        for i, r in enumerate(rows, 1):
+            msg += f"{i}. {r['trend_query']}\n"
+        msg += "\nUse /angle <project\_url> to generate a Trend-Jacking angle for your project."
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"Error fetching trends: {e}")
+
+
+async def angle_command(update, context):
+    """V2.0: /angle <project_url> - Generate a live Trend-Jacking angle."""
+    if not _V2_ENABLED:
+        await update.message.reply_text("V2 Relevancy Engine not available on this server.")
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /angle <project_url>\nExample: /angle https://clientfruits.com")
+        return
+    project_url = context.args[0].strip()
+    await update.message.reply_text(f"Generating trend-jacking angle for `{project_url}`...", parse_mode="Markdown")
+    try:
+        # Get project from DB
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT id, niche FROM projects WHERE project_url = %s", (project_url,))
+        proj = c.fetchone()
+        conn.close()
+        if not proj:
+            await update.message.reply_text(f"Project not found: {project_url}\nAdd it first with /add")
+            return
+        pid = proj['id']
+        niche = proj['niche'] or ''
+        sitemap = get_project_sitemap(pid)
+        trend = get_latest_trend()
+        if not sitemap:
+            await update.message.reply_text("No sitemap pages found. Use the dashboard Scan Sitemap button first.")
+            return
+        if not trend:
+            await update.message.reply_text("No trends found. Use /ingesttrends first.")
+            return
+        rel_map = generate_relevancy_map(niche, sitemap, trend)
+        if not rel_map.get('angle'):
+            await update.message.reply_text("Could not generate angle. Try again.")
+            return
+        msg = (
+            f"*Trend-Jacking Angle for {project_url}*\n\n"
+            f"*Trending Topic:* {trend['query']}\n\n"
+            f"*Generated Angle:*\n_{rel_map['angle']}_\n\n"
+            f"*Pillar Link:* {rel_map.get('pillar_url', 'N/A')}\n"
+            f"*Post Link:* {rel_map.get('post_url', 'N/A')}"
+        )
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"Error generating angle: {e}")
+
+
+async def sitemap_command(update, context):
+    """V2.0: /sitemap <project_url> - Show sitemap knowledge base status."""
+    if not _V2_ENABLED:
+        await update.message.reply_text("V2 Sitemap Engine not available on this server.")
+        return
+    if not context.args:
+        await update.message.reply_text("Usage: /sitemap <project_url>\nExample: /sitemap https://clientfruits.com")
+        return
+    project_url = context.args[0].strip()
+    try:
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT id FROM projects WHERE project_url = %s", (project_url,))
+        proj = c.fetchone()
+        if not proj:
+            conn.close()
+            await update.message.reply_text(f"Project not found: {project_url}")
+            return
+        pid = proj['id']
+        c.execute("SELECT page_type, COUNT(*) as cnt FROM project_sitemaps WHERE project_id = %s GROUP BY page_type", (pid,))
+        rows = c.fetchall()
+        conn.close()
+        if not rows:
+            await update.message.reply_text(f"No sitemap pages found for {project_url}.\nThe daemon will auto-scan in the next 24h cycle, or click Scan Sitemap in the dashboard.")
+            return
+        msg = f"*Sitemap Knowledge Base: {project_url}*\n\n"
+        for r in rows:
+            msg += f"{r['page_type'].upper()} pages: {r['cnt']}\n"
+        msg += "\nUse /angle to generate a trend-jacking reply using these pages."
+        await update.message.reply_text(msg, parse_mode="Markdown")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+
+async def ingesttrends_command(update, context):
+    """V2.0: /ingesttrends - Manually trigger a fresh trend fetch."""
+    if not _V2_ENABLED:
+        await update.message.reply_text("V2 Trend Engine not available.")
+        return
+    await update.message.reply_text("Fetching latest global trends... please wait.")
+    try:
+        ingest_trends()
+        await update.message.reply_text("Done! Use /trends to see what's trending now.")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 
 def main():
     logger.info("Starting native Python Telegram Webhook Receiver...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+    # V1 Commands
     app.add_handler(CommandHandler("onboard", onboard_command))
     app.add_handler(CommandHandler("add", add_command))
     app.add_handler(CommandHandler("projects", projects_command))
@@ -336,6 +467,12 @@ def main():
     app.add_handler(CommandHandler("scan", scan_command))
     app.add_handler(CommandHandler("stats", stats_command))
     app.add_handler(CommandHandler("health", health_command))
+    # V2.0 Commands
+    app.add_handler(CommandHandler("trends", trends_command))
+    app.add_handler(CommandHandler("angle", angle_command))
+    app.add_handler(CommandHandler("sitemap", sitemap_command))
+    app.add_handler(CommandHandler("ingesttrends", ingesttrends_command))
+    # Message & callback handlers
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
