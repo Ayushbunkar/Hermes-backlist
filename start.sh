@@ -4,20 +4,20 @@ echo "       STARTING HERMES ENGINE            "
 echo "========================================="
 
 echo "-> Cleaning up old background processes..."
-pkill -f "telegram_router.py" 2>/dev/null || true
-pkill -f "nexus_daemon.py" 2>/dev/null || true
+# Use kill -9 to force-terminate any lingering bot processes
+pkill -9 -f "telegram_router.py" 2>/dev/null || true
+pkill -9 -f "nexus_daemon.py" 2>/dev/null || true
 pkill -f "next dev" 2>/dev/null || true
-sleep 3
+sleep 5
 
-# Kill any zombie python processes holding the Telegram long-poll connection
-kill $(lsof -ti:0 2>/dev/null) 2>/dev/null || true
-
-# Force-clear Telegram's polling session before starting (avoids 409 Conflict)
+# Force-clear Telegram's polling session (avoids 409 Conflict)
 echo "-> Clearing Telegram webhook/polling session..."
-BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN workspace-bl-orchestrator/.env 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]')
+BOT_TOKEN=$(python3 -c "import os,sys; sys.path.insert(0,'workspace-bl-orchestrator/skills/pipeline'); import config; print(config.TELEGRAM_BOT_TOKEN)" 2>/dev/null)
 if [ -n "$BOT_TOKEN" ]; then
     curl -s "https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook?drop_pending_updates=true" > /dev/null
     echo "   Telegram session cleared."
+else
+    echo "   Could not read BOT_TOKEN, skipping webhook clear."
 fi
 
 sleep 2

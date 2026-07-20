@@ -476,7 +476,8 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     app.add_handler(CallbackQueryHandler(handle_callback))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-    app.run_polling()
+    # drop_pending_updates=True clears any lingering long-poll from a previous instance (fixes 409 Conflict)
+    app.run_polling(drop_pending_updates=True, timeout=10)
 
 if __name__ == '__main__':
     main()
