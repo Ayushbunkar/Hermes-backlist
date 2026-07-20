@@ -64,12 +64,35 @@ async def handle_message(update, context):
         if step == "start":
             project_url = update.message.text
             c.execute("UPDATE onboard_sessions SET step=%s WHERE chat_id=%s", ("complete", str(chat_id)))
-            
-            # Send confirmation with Inline Keyboard (Buttons)
             keyboard = [[InlineKeyboardButton("Confirm", callback_data=f"confirm_{project_url}")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            
             await update.message.reply_text(f"Project URL set to {project_url}.", reply_markup=reply_markup)
+        
+        elif step == "wait_add":
+            c.execute("DELETE FROM onboard_sessions WHERE chat_id=%s AND user_id=%s", (str(chat_id), str(user_id)))
+            parts = update.message.text.split()
+            if len(parts) < 2:
+                await update.message.reply_text("Invalid format. Please use: <url> <niche>")
+            else:
+                url, niche = parts[0], " ".join(parts[1:])
+                context.args = [url, niche]
+                await add_command(update, context)
+                
+        elif step == "wait_delete":
+            c.execute("DELETE FROM onboard_sessions WHERE chat_id=%s AND user_id=%s", (str(chat_id), str(user_id)))
+            context.args = [update.message.text.strip()]
+            await delete_command(update, context)
+            
+        elif step == "wait_angle":
+            c.execute("DELETE FROM onboard_sessions WHERE chat_id=%s AND user_id=%s", (str(chat_id), str(user_id)))
+            context.args = [update.message.text.strip()]
+            await angle_command(update, context)
+            
+        elif step == "wait_sitemap":
+            c.execute("DELETE FROM onboard_sessions WHERE chat_id=%s AND user_id=%s", (str(chat_id), str(user_id)))
+            context.args = [update.message.text.strip()]
+            await sitemap_command(update, context)
+            
         conn.commit()
     else:
         import subprocess
@@ -122,6 +145,7 @@ async def handle_callback(update, context):
             conn.close()
             
         await query.edit_message_text(text=f"Project {project} formally confirmed and initialized via Hermes!")
+        
     elif query.data == "cmd_trends":
         await trends_command(update, context)
     elif query.data == "cmd_projects":
@@ -132,6 +156,31 @@ async def handle_callback(update, context):
         await health_command(update, context)
     elif query.data == "cmd_help":
         await help_callback(update, context)
+        
+    # State-based Button Handlers
+    elif query.data in ["cmd_add", "cmd_delete", "cmd_angle", "cmd_sitemap"]:
+        chat_id = update.effective_chat.id
+        user_id = update.effective_user.id
+        state_map = {
+            "cmd_add": ("wait_add", "Please reply with the new project URL and Niche (e.g. `https://example.com Tech`)"),
+            "cmd_delete": ("wait_delete", "Please reply with the Project URL you want to delete."),
+            "cmd_angle": ("wait_angle", "Please reply with the Project URL to generate a live Trend-Jacking angle."),
+            "cmd_sitemap": ("wait_sitemap", "Please reply with the Project URL to view its sitemap status.")
+        }
+        step, prompt = state_map[query.data]
+        
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("CREATE TABLE IF NOT EXISTS onboard_sessions (chat_id TEXT, user_id TEXT, step TEXT, PRIMARY KEY(chat_id, user_id))")
+        try:
+            c.execute("INSERT INTO onboard_sessions (chat_id, user_id, step) VALUES (%s, %s, %s)", (str(chat_id), str(user_id), step))
+        except:
+            c.execute("UPDATE onboard_sessions SET step=%s WHERE chat_id=%s AND user_id=%s", (step, str(chat_id), str(user_id)))
+        conn.commit()
+        conn.close()
+        
+        await query.message.reply_text(prompt, parse_mode="Markdown")
+        
     elif query.data.startswith("bl_"):
         import subprocess
         import sys
@@ -295,12 +344,18 @@ async def stats_command(update, context):
     try:
         conn = config.get_db_connection()
         c = conn.cursor()
-        
         c.execute("SELECT COUNT(*) as cnt FROM projects WHERE status = 'active'")
         projects = c.fetchone()["cnt"]
+        conn.close()
         
-        c.execute("SELECT status, COUNT(*) as cnt FROM leads GROUP BY status")
-        lead_rows = c.fetchall()
+        # harvest_leads is in SQLite
+        import sqlite3
+        sqlite_conn = sqlite3.connect(config.BL_DB_PATH)
+        sqlite_conn.row_factory = sqlite3.Row
+        sc = sqlite_conn.cursor()
+        sc.execute("SELECT status, COUNT(*) as cnt FROM harvest_leads GROUP BY status")
+        lead_rows = sc.fetchall()
+        sqlite_conn.close()
         
         stats = {r["status"]: r["cnt"] for r in lead_rows}
         total = sum(stats.values())
@@ -313,7 +368,6 @@ async def stats_command(update, context):
         msg += f"Rejected: {stats.get('REJECTED', 0)}\n"
         
         await update.effective_message.reply_text(msg, parse_mode="Markdown")
-        conn.close()
     except Exception as e:
         await update.effective_message.reply_text(f"Error fetching stats: {e}")
 
@@ -472,30 +526,25 @@ async def ingesttrends_command(update, context):
 async def menu_command(update, context):
     """Shows the main interactive button menu."""
     keyboard = [
+        [InlineKeyboardButton("➕ Add Project", callback_data="cmd_add"),
+         InlineKeyboardButton("🗑 Delete Project", callback_data="cmd_delete")],
+        [InlineKeyboardButton("🧠 Generate Angle", callback_data="cmd_angle"),
+         InlineKeyboardButton("🗺 Check Sitemap", callback_data="cmd_sitemap")],
         [InlineKeyboardButton("🌍 Top Trends (V2)", callback_data="cmd_trends"),
-         InlineKeyboardButton("📈 System Stats", callback_data="cmd_stats")],
-        [InlineKeyboardButton("📋 Active Projects", callback_data="cmd_projects"),
-         InlineKeyboardButton("🩺 Daemon Health", callback_data="cmd_health")],
-        [InlineKeyboardButton("ℹ️ How to Use (Commands)", callback_data="cmd_help")]
+         InlineKeyboardButton("📋 Active Projects", callback_data="cmd_projects")],
+        [InlineKeyboardButton("📈 System Stats", callback_data="cmd_stats"),
+         InlineKeyboardButton("🩺 Daemon Health", callback_data="cmd_health")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     msg = (
         "🚀 *Hermes Orchestrator Dashboard*\n\n"
-        "Welcome! I am the Hermes Core Engine. Select a quick action below, or type a command."
+        "Welcome! I am the Hermes Core Engine. Select a quick action below:"
     )
     await update.effective_message.reply_text(msg, reply_markup=reply_markup, parse_mode="Markdown")
 
 async def help_callback(update, context):
-    """Shows help for commands requiring arguments."""
-    msg = (
-        "🛠 *Commands Requiring Input:*\n\n"
-        "➕ `/add <url> <niche>` - Add a new project\n"
-        "🗑 `/delete <url>` - Remove a project\n"
-        "🧠 `/angle <url>` - Generate a Trend-Jacking angle\n"
-        "🗺 `/sitemap <url>` - View sitemap knowledge base\n\n"
-        "_Tip: You can use the buttons above for quick actions without typing!_"
-    )
-    await update.callback_query.message.reply_text(msg, parse_mode="Markdown")
+    """(Deprecated) Help section no longer needed as all features are buttons."""
+    pass
 
 # ─────────────────────────────────────────────────────────────────────────────
 
