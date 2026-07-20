@@ -456,11 +456,21 @@ async def angle_command(update, context):
         sitemap = get_project_sitemap(pid)
         trend = get_latest_trend()
         if not sitemap:
-            await update.message.reply_text("No sitemap pages found. Use the dashboard Scan Sitemap button first.")
-            return
+            await update.message.reply_text("Sitemap not found in DB. Scanning live right now...", parse_mode="Markdown")
+            scan_project_sitemap(pid, project_url)
+            sitemap = get_project_sitemap(pid)
+            if not sitemap:
+                await update.message.reply_text("Failed to find or parse sitemap for this URL. Ensure it has a /sitemap.xml")
+                return
+                
         if not trend:
-            await update.message.reply_text("No trends found. Use /ingesttrends first.")
-            return
+            await update.message.reply_text("No trends found. Scanning live right now...", parse_mode="Markdown")
+            ingest_trends()
+            trend = get_latest_trend()
+            if not trend:
+                await update.message.reply_text("Failed to fetch trends. Try again later.")
+                return
+                
         rel_map = generate_relevancy_map(niche, sitemap, trend)
         if not rel_map.get('angle'):
             await update.message.reply_text("Could not generate angle. Try again.")
@@ -500,8 +510,20 @@ async def sitemap_command(update, context):
         rows = c.fetchall()
         conn.close()
         if not rows:
-            await update.message.reply_text(f"No sitemap pages found for {project_url}.\nThe daemon will auto-scan in the next 24h cycle, or click Scan Sitemap in the dashboard.")
-            return
+            await update.message.reply_text("Sitemap not found in DB. Scanning live right now...", parse_mode="Markdown")
+            scan_project_sitemap(pid, project_url)
+            
+            # Re-fetch after scan
+            conn = config.get_db_connection()
+            c = conn.cursor()
+            c.execute("SELECT page_type, COUNT(*) as cnt FROM project_sitemaps WHERE project_id = %s GROUP BY page_type", (pid,))
+            rows = c.fetchall()
+            conn.close()
+            
+            if not rows or rows[0]['cnt'] == 0:
+                await update.message.reply_text(f"Could not find or parse a sitemap for {project_url}. Make sure it has a valid `/sitemap.xml`.", parse_mode="Markdown")
+                return
+                
         msg = f"*Sitemap Knowledge Base: {project_url}*\n\n"
         for r in rows:
             msg += f"{r['page_type'].upper()} pages: {r['cnt']}\n"
