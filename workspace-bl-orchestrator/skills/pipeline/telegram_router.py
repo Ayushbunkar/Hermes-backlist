@@ -122,6 +122,14 @@ async def handle_callback(update, context):
             conn.close()
             
         await query.edit_message_text(text=f"Project {project} formally confirmed and initialized via Hermes!")
+    elif query.data == "cmd_trends":
+        await trends_command(update, context)
+    elif query.data == "cmd_projects":
+        await projects_command(update, context)
+    elif query.data == "cmd_stats":
+        await stats_command(update, context)
+    elif query.data == "cmd_health":
+        await health_command(update, context)
     elif query.data.startswith("bl_"):
         import subprocess
         import sys
@@ -212,30 +220,35 @@ async def add_command(update, context):
         for site in default_sites:
             wdb.upsert_whitelist_site(pid, site, added_by="seed", db_path=config.BL_DB_PATH)
             
-        await update.message.reply_text(f"✅ Project {project} added successfully! Niche set to: {niche}. Tracking started.")
+        await update.effective_message.reply_text(f"✅ Project {project} added successfully! Niche set to: {niche}. Tracking started.")
     except Exception as e:
-        await update.message.reply_text(f"❌ Error adding project: {e}")
+        await update.effective_message.reply_text(f"❌ Error adding project: {e}")
 
 async def projects_command(update, context):
-    """Handles /projects"""
+    """Lists all active projects."""
     try:
-        wdb.init_whitelist_db(config.BL_DB_PATH)
-        projects = wdb.get_active_projects(config.BL_DB_PATH)
-        if not projects:
-            await update.message.reply_text("No active projects found.")
-            return
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT project_url, niche FROM projects WHERE status = 'active'")
+        rows = c.fetchall()
+        conn.close()
         
-        msg = "📊 Active Projects:\n\n"
-        for p in projects:
-            msg += f"🔹 {p['project_url']}\n   Niche: {p['niche']}\n"
-        await update.message.reply_text(msg)
+        if not rows:
+            await update.effective_message.reply_text("No active projects. Use /add <url> <niche> to add one.")
+            return
+            
+        msg = "📋 *Active Projects*\n\n"
+        for i, row in enumerate(rows, 1):
+            msg += f"{i}. {row['project_url']} (Niche: {row['niche']})\n"
+            
+        await update.effective_message.reply_text(msg, parse_mode="Markdown")
     except Exception as e:
-        await update.message.reply_text(f"❌ Error fetching projects: {e}")
+        await update.effective_message.reply_text(f"Error fetching projects: {e}")
 
 async def delete_command(update, context):
     """Handles /delete <url> - deletes from both SQLite (daemon) and PostgreSQL (dashboard)"""
     if not context.args:
-        await update.message.reply_text("Usage: /delete <project_url>")
+        await update.effective_message.reply_text("Usage: /delete <project_url>")
         return
     project = context.args[0]
     try:
@@ -256,11 +269,11 @@ async def delete_command(update, context):
             # Don't fail if PostgreSQL delete has an issue - SQLite delete was the critical one
             print(f"[delete_command] PostgreSQL delete warning: {pg_err}")
 
-        await update.message.reply_text(f"🗑️ Project deleted from all systems:\n`{project}`", parse_mode="Markdown")
+        await update.effective_message.reply_text(f"🗑️ Project deleted from all systems:\n`{project}`", parse_mode="Markdown")
     except ValueError as e:
-        await update.message.reply_text(f"❌ {e}")
+        await update.effective_message.reply_text(f"❌ {e}")
     except Exception as e:
-        await update.message.reply_text(f"❌ Error deleting project: {e}")
+        await update.effective_message.reply_text(f"❌ Error deleting project: {e}")
 
 async def scan_command(update, context):
     """Handles /scan"""
@@ -271,36 +284,36 @@ async def scan_command(update, context):
         for p in projects:
             total_due += wdb.set_project_sites_due_now(p["id"], config.BL_DB_PATH)
         
-        await update.message.reply_text(f"🔍 Scan triggered! Marked {total_due} sources as due now. The orchestrator will pick them up shortly.")
+        await update.effective_message.reply_text(f"🔍 Scan triggered! Marked {total_due} sources as due now. The orchestrator will pick them up shortly.")
     except Exception as e:
-        await update.message.reply_text(f"❌ Error triggering scan: {e}")
+        await update.effective_message.reply_text(f"❌ Error triggering scan: {e}")
 
 async def stats_command(update, context):
-    """Handles /stats"""
+    """Displays global system stats."""
     try:
         conn = config.get_db_connection()
         c = conn.cursor()
         
-        wdb.init_whitelist_db(config.BL_DB_PATH)
-        projects = wdb.get_active_projects(config.BL_DB_PATH)
+        c.execute("SELECT COUNT(*) as cnt FROM projects WHERE status = 'active'")
+        projects = c.fetchone()["cnt"]
         
-        c.execute("SELECT status, count(*) FROM harvest_leads GROUP BY status")
-        rows = c.fetchall()
+        c.execute("SELECT status, COUNT(*) as cnt FROM leads GROUP BY status")
+        lead_rows = c.fetchall()
         
-        stats = {r["status"]: r["count"] for r in rows}
+        stats = {r["status"]: r["cnt"] for r in lead_rows}
         total = sum(stats.values())
         
-        msg = "📈 Hermes Global Stats\n\n"
-        msg += f"Active Projects: {len(projects)}\n"
+        msg = "📈 *Hermes Global Stats*\n\n"
+        msg += f"Active Projects: {projects}\n"
         msg += f"Total Leads Found: {total}\n"
         msg += f"Approved & Drafted: {stats.get('DRAFTED', 0) + stats.get('SENT', 0)}\n"
         msg += f"Pending Review: {stats.get('SCORED', 0) + stats.get('GATED', 0)}\n"
         msg += f"Rejected: {stats.get('REJECTED', 0)}\n"
         
-        await update.message.reply_text(msg)
+        await update.effective_message.reply_text(msg, parse_mode="Markdown")
         conn.close()
     except Exception as e:
-        await update.message.reply_text(msg, parse_mode="Markdown")
+        await update.effective_message.reply_text(f"Error fetching stats: {e}")
 
 
 async def health_command(update, context):
@@ -332,7 +345,7 @@ async def health_command(update, context):
     except Exception as e:
         msg = f"Failed to read heartbeat: `{e}`\nIs the daemon running?"
         
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    await update.effective_message.reply_text(msg, parse_mode="Markdown")
 
 
 # ── V2.0 Telegram Commands ───────────────────────────────────────────────────
@@ -340,7 +353,7 @@ async def health_command(update, context):
 async def trends_command(update, context):
     """V2.0: /trends - Show today's top global trending topics."""
     if not _V2_ENABLED:
-        await update.message.reply_text("V2 Trend Engine not available on this server.")
+        await update.effective_message.reply_text("V2 Trend Engine not available on this server.")
         return
     try:
         conn = config.get_db_connection()
@@ -349,15 +362,15 @@ async def trends_command(update, context):
         rows = c.fetchall()
         conn.close()
         if not rows:
-            await update.message.reply_text("No trends found. Run /ingesttrends to fetch fresh data.")
+            await update.effective_message.reply_text("No trends found. Run /ingesttrends to fetch fresh data.")
             return
         msg = "*Today's Global Trends (V2.0)*\n\n"
         for i, r in enumerate(rows, 1):
             msg += f"{i}. {r['trend_query']}\n"
         msg += r"\nUse /angle <project\_url> to generate a Trend-Jacking angle for your project."
-        await update.message.reply_text(msg, parse_mode="Markdown")
+        await update.effective_message.reply_text(msg, parse_mode="Markdown")
     except Exception as e:
-        await update.message.reply_text(f"Error fetching trends: {e}")
+        await update.effective_message.reply_text(f"Error fetching trends: {e}")
 
 
 async def angle_command(update, context):
@@ -443,14 +456,28 @@ async def sitemap_command(update, context):
 async def ingesttrends_command(update, context):
     """V2.0: /ingesttrends - Manually trigger a fresh trend fetch."""
     if not _V2_ENABLED:
-        await update.message.reply_text("V2 Trend Engine not available.")
+        await update.effective_message.reply_text("V2 Trend Engine not available.")
         return
-    await update.message.reply_text("Fetching latest global trends... please wait.")
+    await update.effective_message.reply_text("Fetching latest global trends... please wait.")
     try:
         ingest_trends()
-        await update.message.reply_text("Done! Use /trends to see what's trending now.")
+        await update.effective_message.reply_text("Done! Use /trends to see what's trending now.")
     except Exception as e:
-        await update.message.reply_text(f"Error: {e}")
+        await update.effective_message.reply_text(f"Error: {e}")
+
+# ── Button Interface ─────────────────────────────────────────────────────────
+
+async def menu_command(update, context):
+    """Shows the main interactive button menu."""
+    keyboard = [
+        [InlineKeyboardButton("🌍 View Top Trends", callback_data="cmd_trends")],
+        [InlineKeyboardButton("📋 View Projects", callback_data="cmd_projects"),
+         InlineKeyboardButton("📈 View Stats", callback_data="cmd_stats")],
+        [InlineKeyboardButton("🩺 System Health", callback_data="cmd_health")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    msg = "🚀 *Hermes Orchestrator Menu*\nSelect an option below to control the system:"
+    await update.effective_message.reply_text(msg, reply_markup=reply_markup, parse_mode="Markdown")
 
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -459,6 +486,9 @@ async def ingesttrends_command(update, context):
 def main():
     logger.info("Starting native Python Telegram Webhook Receiver...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+    # Button Interface
+    app.add_handler(CommandHandler("start", menu_command))
+    app.add_handler(CommandHandler("menu", menu_command))
     # V1 Commands
     app.add_handler(CommandHandler("onboard", onboard_command))
     app.add_handler(CommandHandler("add", add_command))
