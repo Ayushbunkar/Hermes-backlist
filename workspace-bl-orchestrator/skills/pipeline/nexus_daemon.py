@@ -29,6 +29,18 @@ from resend_pending import resend_one_opportunity  # noqa: E402
 import config
 import hermes_client
 
+# V2.0 Relevancy Engine imports (graceful fallback if not yet installed)
+try:
+    _SEARCH_SKILLS_DIR = os.path.abspath(os.path.join(_PIPELINE_DIR, '..', 'search'))
+    if _SEARCH_SKILLS_DIR not in sys.path:
+        sys.path.insert(0, _SEARCH_SKILLS_DIR)
+    from trend_ingestion import ingest_trends
+    from sitemap_scanner import scan_project_sitemap
+    from relevancy_engine import generate_relevancy_map, get_project_sitemap, get_latest_trend
+    _V2_ENABLED = True
+except ImportError:
+    _V2_ENABLED = False
+
 # Phase 10: Health metrics
 _consecutive_errors = 0
 
@@ -61,6 +73,8 @@ FINDER_OUTPUT = os.environ.get(
 )
 OPENWEB_MAX = int(os.environ.get("BL_OPENWEB_MAX", "15"))
 COMPETITOR_MAX = int(os.environ.get("BL_COMPETITOR_MAX", "12"))
+TREND_INGEST_EVERY_TICKS = int(os.environ.get("BL_TREND_INGEST_EVERY_TICKS", "2880"))  # ~24h at 30s gap
+SITEMAP_SCAN_EVERY_TICKS = int(os.environ.get("BL_SITEMAP_SCAN_EVERY_TICKS", "2880"))  # ~24h at 30s gap
 
 _SEARCH_DIR = os.path.abspath(os.path.join(_PIPELINE_DIR, "..", "search"))
 if _SEARCH_DIR not in sys.path:
@@ -418,6 +432,69 @@ def phase_vocab() -> None:
             log(f"vocab: ERROR {e}")
 
 
+# ── V2.0 Cron Phases ────────────────────────────────────────────────────────
+
+def phase_trend_ingest() -> None:
+    """V2.0: Fetch global trending news and save to daily_trends table."""
+    if not _V2_ENABLED:
+        return
+    try:
+        log("v2-trends: ingesting global trends from RSS...")
+        ingest_trends()
+        log("v2-trends: trend ingestion complete")
+    except Exception as e:  # noqa: BLE001
+        log(f"v2-trends: ERROR {e}")
+
+
+def phase_sitemap_scan() -> None:
+    """V2.0: Refresh sitemap knowledge base for all active projects."""
+    if not _V2_ENABLED:
+        return
+    for project in wdb.get_active_projects(db_path=DB_PATH):
+        pid = project.get("id")
+        purl = project.get("project_url", "")
+        if not pid or not purl:
+            continue
+        try:
+            log(f"v2-sitemap: scanning {purl}")
+            scan_project_sitemap(pid, purl)
+        except Exception as e:  # noqa: BLE001
+            log(f"v2-sitemap: ERROR for {purl}: {e}")
+
+
+def phase_trend_query() -> None:
+    """V2.0: Generate trend-based search queries and inject into discover phase."""
+    if not _V2_ENABLED:
+        return
+    trend = get_latest_trend()
+    if not trend:
+        return
+    for project in wdb.get_active_projects(db_path=DB_PATH):
+        pid = project.get("id")
+        niche = project.get("niche") or ""
+        purl = project.get("project_url", "")
+        if not pid or not niche:
+            continue
+        try:
+            sitemap = get_project_sitemap(pid)
+            if not sitemap:
+                continue
+            rel_map = generate_relevancy_map(niche, sitemap, trend)
+            angle = rel_map.get("angle", "")
+            if not angle:
+                continue
+            # Inject angle as an extra vocab term so the query planner uses it next tick
+            trend_term = f"{trend['query']} {niche}"
+            existing = wdb.get_vocab_terms(pid, db_path=DB_PATH)
+            if trend_term not in existing:
+                wdb.upsert_vocab_term(pid, trend_term, db_path=DB_PATH)
+                log(f"v2-query: injected trend term for {purl}: '{trend_term[:60]}'")
+        except Exception as e:  # noqa: BLE001
+            log(f"v2-query: ERROR for {purl}: {e}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 def phase_domain_promote() -> None:
     """Promote graph-follow domain candidates + merge periodic finder output."""
     for project in wdb.get_active_projects(db_path=DB_PATH):
@@ -535,6 +612,16 @@ def tick() -> None:
 
     if _tick_counter % PRIORITY_REFRESH_EVERY_TICKS == 0:
         phases.append(("priority", phase_refresh_priorities))
+
+    # V2.0 cron phases
+    if _V2_ENABLED:
+        if _tick_counter % TREND_INGEST_EVERY_TICKS == 0:
+            phases.append(("v2-trends", phase_trend_ingest))
+        if _tick_counter % SITEMAP_SCAN_EVERY_TICKS == 0:
+            phases.append(("v2-sitemap", phase_sitemap_scan))
+        if _tick_counter % OPENWEB_EVERY_TICKS == 0:  # same cadence as openweb search
+            phases.append(("v2-query", phase_trend_query))
+
     phases.extend([
         ("resurface", phase_resurface),
         ("draft", phase_draft),

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal, Trash2 } from 'lucide-react';
+import { Globe, Plus, AlertCircle, Link as LinkIcon, Tag, Search, Terminal, Trash2, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ToastProvider';
 
@@ -17,6 +17,7 @@ export default function ProjectsPage() {
   const [addingSource, setAddingSource] = useState(false);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
+  const [scanningProject, setScanningProject] = useState<number | null>(null);
   const { toast } = useToast();
 
   const fetchActivity = async () => {
@@ -130,6 +131,22 @@ export default function ProjectsPage() {
 
   const handleDeleteClick = (id: number) => {
     setProjectToDelete(id);
+  };
+
+  const handleScanSitemap = async (id: number, url: string) => {
+    setScanningProject(id);
+    try {
+      const res = await fetch(`/api/projects/${id}/scan-sitemap`, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        toast('success', 'Sitemap Scan Started', `Scanning ${url} for pages in the background.`);
+      } else {
+        toast('error', 'Scan Failed', data.error || 'Could not start sitemap scan.');
+      }
+    } catch (e: any) {
+      toast('error', 'Error', e.message);
+    }
+    setScanningProject(null);
   };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -273,15 +290,25 @@ export default function ProjectsPage() {
                     return (
                       <tr key={proj.id} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                         <td className="px-6 py-4">
-                          <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start justify-between gap-2">
                             <span className="font-medium text-white block break-all">{proj.project_url}</span>
-                            <button 
-                              onClick={() => handleDeleteClick(proj.id)} 
-                              title="Delete Project"
-                              className="text-red-400 hover:text-red-300 hover:bg-red-900/30 p-1.5 rounded-lg transition-colors flex-shrink-0"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => handleScanSitemap(proj.id, proj.project_url)}
+                                title="Scan Sitemap"
+                                disabled={scanningProject === proj.id}
+                                className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 p-1.5 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                <Map size={16} />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(proj.id)} 
+                                title="Delete Project"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-900/30 p-1.5 rounded-lg transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                           
                           {/* Sources UI */}
