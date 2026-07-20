@@ -354,7 +354,7 @@ async def trends_command(update, context):
         msg = "*Today's Global Trends (V2.0)*\n\n"
         for i, r in enumerate(rows, 1):
             msg += f"{i}. {r['trend_query']}\n"
-        msg += "\nUse /angle <project\_url> to generate a Trend-Jacking angle for your project."
+        msg += r"\nUse /angle <project\_url> to generate a Trend-Jacking angle for your project."
         await update.message.reply_text(msg, parse_mode="Markdown")
     except Exception as e:
         await update.message.reply_text(f"Error fetching trends: {e}")

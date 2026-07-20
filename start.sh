@@ -1,12 +1,26 @@
 #!/bin/bash
 echo "========================================="
-echo "       🚀 STARTING HERMES ENGINE 🚀      "
+echo "       STARTING HERMES ENGINE            "
 echo "========================================="
 
 echo "-> Cleaning up old background processes..."
-pkill -f "telegram_router.py" || true
-pkill -f "nexus_daemon.py" || true
-sleep 1
+pkill -f "telegram_router.py" 2>/dev/null || true
+pkill -f "nexus_daemon.py" 2>/dev/null || true
+pkill -f "next dev" 2>/dev/null || true
+sleep 3
+
+# Kill any zombie python processes holding the Telegram long-poll connection
+kill $(lsof -ti:0 2>/dev/null) 2>/dev/null || true
+
+# Force-clear Telegram's polling session before starting (avoids 409 Conflict)
+echo "-> Clearing Telegram webhook/polling session..."
+BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN workspace-bl-orchestrator/.env 2>/dev/null | cut -d'=' -f2 | tr -d '[:space:]')
+if [ -n "$BOT_TOKEN" ]; then
+    curl -s "https://api.telegram.org/bot${BOT_TOKEN}/deleteWebhook?drop_pending_updates=true" > /dev/null
+    echo "   Telegram session cleared."
+fi
+
+sleep 2
 
 # 1. Start the Telegram Bot Router in the background
 echo "-> Starting Telegram Router (Bot Listener)..."
@@ -33,11 +47,11 @@ cd ..
 DASHBOARD_PID=$!
 
 echo "========================================="
-echo "✅ Everything is LIVE (Frontend + Backend)! Press Ctrl+C to stop."
+echo "Everything is LIVE! Press Ctrl+C to stop."
 echo "========================================="
 
 # Trap Ctrl+C (SIGINT) so it cleanly kills all background processes when you exit
-trap "echo '🛑 Stopping Hermes Engines and Dashboard...'; kill $ROUTER_PID $DAEMON_PID $DASHBOARD_PID; exit" INT
+trap "echo 'Stopping Hermes...'; kill $ROUTER_PID $DAEMON_PID $DASHBOARD_PID 2>/dev/null; exit" INT
 
 # Wait keeps the script running and printing logs to this terminal
 wait
