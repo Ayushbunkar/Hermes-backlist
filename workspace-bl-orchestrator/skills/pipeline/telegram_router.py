@@ -118,8 +118,6 @@ async def handle_callback(update, context):
     if query.data.startswith("confirm_"):
         project = query.data.split("confirm_")[1]
         
-        import whitelist_db as wdb
-        import config
         wdb.init_whitelist_db(config.BL_DB_PATH)
         name = project.split("://")[-1] if "://" in project else project
         pid = wdb.upsert_project(project, niche="auto", name=name)
