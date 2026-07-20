@@ -12,6 +12,12 @@ from typing import Callable
 import whitelist_db as wdb
 
 try:
+    from relevancy_engine import generate_relevancy_map, get_project_sitemap, get_latest_trend
+    _RELEVANCY_ENABLED = True
+except ImportError:
+    _RELEVANCY_ENABLED = False
+
+try:
     from bs4 import BeautifulSoup
 except ImportError:
     BeautifulSoup = None
@@ -137,6 +143,41 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
     except Exception as e:
         log(f"draft: Could not read queue {e}")
         
+    # ── V2.0 Relevancy Engine: Try to get trend angle + dual deep links ────────
+    relevancy_context = ""
+    dual_link_instruction = f"Project URL (homepage fallback): {project['project_url']}"
+    if _RELEVANCY_ENABLED:
+        try:
+            niche = project.get('niche') or ''
+            project_id = project.get('id')
+            sitemap = get_project_sitemap(project_id) if project_id else []
+            trend = get_latest_trend()
+            if sitemap and trend:
+                rel_map = generate_relevancy_map(niche, sitemap, trend)
+                if rel_map.get('angle') and rel_map.get('pillar_url'):
+                    relevancy_context = (
+                        f"\n=== TREND-JACKING CONTEXT (V2.0) ===\n"
+                        f"TRENDING TOPIC: {trend['query']}\n"
+                        f"VIRAL ANGLE: {rel_map['angle']}\n"
+                        f"Use this angle as the HOOK of your reply — connect it to the discussion naturally.\n"
+                    )
+                    pillar = rel_map.get('pillar_url', project['project_url'])
+                    post = rel_map.get('post_url', '')
+                    if post and post != pillar:
+                        dual_link_instruction = (
+                            f"HUB & SPOKE DUAL-LINK STRATEGY (MANDATORY):\n"
+                            f"1. TIMELY POST (use inline in reply body): {post}\n"
+                            f"   Anchor text: Reference to the timely blog post naturally.\n"
+                            f"2. PILLAR PAGE (use once at the end as 'further reading'): {pillar}\n"
+                            f"   Anchor text: Reference to the core service page naturally.\n"
+                            f"Insert BOTH links naturally. Do NOT use 'check this out' or ad-like phrasing."
+                        )
+                    else:
+                        dual_link_instruction = f"Project URL: {pillar}"
+        except Exception as _re:
+            pass  # Relevancy engine failed silently — fall back to standard mode
+    # ─────────────────────────────────────────────────────────────────────────────
+
     task = (
         "You are an expert SEO Content Writer and Community Member following Google's EEAT (Experience, Expertise, Authoritativeness, Trustworthiness) guidelines.\n"
         "Create submission-ready, highly valuable backlink content for each opportunity in the JSON queue.\n\n"
@@ -146,9 +187,10 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
         "3. Natural Citation: Integrate the project link organically as a reference or tool you used, NOT as an advertisement.\n"
         "4. Ban Spam: NEVER use phrases like 'Check out this link', 'I found a great tool', or 'Click here'.\n"
         "5. Tone Match: Adjust your tone to match the 'discussion_intent' and 'question_type' of the thread.\n\n"
+        f"{relevancy_context}"
         f"RUN_DIR={run_dir}\n"
         f"Queue (JSON list containing page_text, title, intent, etc.):\n{queue_content}\n\n"
-        f"Project URL: {project['project_url']}\n"
+        f"{dual_link_instruction}\n"
         f"Niche: {project.get('niche') or ''}\n"
         f"Project name: {name}\n"
         f"Project description: {desc}\n"
@@ -167,7 +209,7 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
         '      "type": "the opportunity type (e.g. forum, blog)",\n'
         '      "title": "a good title for the post",\n'
         '      "content": "the full post content",\n'
-        '      "backlink_url": "the project URL",\n'
+        '      "backlink_url": "the primary link URL used",\n'
         '      "backlink_anchor_text": "the anchor text used in the post",\n'
         '      "image_path": "path/to/image.jpg (if applicable, else omit)"\n'
         '    }\n'
