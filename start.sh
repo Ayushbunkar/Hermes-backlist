@@ -4,10 +4,9 @@ echo "       STARTING HERMES ENGINE            "
 echo "========================================="
 
 echo "-> Cleaning up old background processes..."
-# Use kill -9 to force-terminate any lingering bot processes
-pkill -9 -f "telegram_router.py" 2>/dev/null || true
-pkill -9 -f "nexus_daemon.py" 2>/dev/null || true
-pkill -f "next dev" 2>/dev/null || true
+# Use kill -9 to force-terminate ALL python and node instances (Codespace cleanup)
+pkill -9 python 2>/dev/null || true
+pkill -9 node 2>/dev/null || true
 sleep 5
 
 # Force-clear Telegram's polling session (avoids 409 Conflict)
