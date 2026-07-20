@@ -130,6 +130,8 @@ async def handle_callback(update, context):
         await stats_command(update, context)
     elif query.data == "cmd_health":
         await health_command(update, context)
+    elif query.data == "cmd_help":
+        await help_callback(update, context)
     elif query.data.startswith("bl_"):
         import subprocess
         import sys
@@ -470,14 +472,30 @@ async def ingesttrends_command(update, context):
 async def menu_command(update, context):
     """Shows the main interactive button menu."""
     keyboard = [
-        [InlineKeyboardButton("🌍 View Top Trends", callback_data="cmd_trends")],
-        [InlineKeyboardButton("📋 View Projects", callback_data="cmd_projects"),
-         InlineKeyboardButton("📈 View Stats", callback_data="cmd_stats")],
-        [InlineKeyboardButton("🩺 System Health", callback_data="cmd_health")]
+        [InlineKeyboardButton("🌍 Top Trends (V2)", callback_data="cmd_trends"),
+         InlineKeyboardButton("📈 System Stats", callback_data="cmd_stats")],
+        [InlineKeyboardButton("📋 Active Projects", callback_data="cmd_projects"),
+         InlineKeyboardButton("🩺 Daemon Health", callback_data="cmd_health")],
+        [InlineKeyboardButton("ℹ️ How to Use (Commands)", callback_data="cmd_help")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    msg = "🚀 *Hermes Orchestrator Menu*\nSelect an option below to control the system:"
+    msg = (
+        "🚀 *Hermes Orchestrator Dashboard*\n\n"
+        "Welcome! I am the Hermes Core Engine. Select a quick action below, or type a command."
+    )
     await update.effective_message.reply_text(msg, reply_markup=reply_markup, parse_mode="Markdown")
+
+async def help_callback(update, context):
+    """Shows help for commands requiring arguments."""
+    msg = (
+        "🛠 *Commands Requiring Input:*\n\n"
+        "➕ `/add <url> <niche>` - Add a new project\n"
+        "🗑 `/delete <url>` - Remove a project\n"
+        "🧠 `/angle <url>` - Generate a Trend-Jacking angle\n"
+        "🗺 `/sitemap <url>` - View sitemap knowledge base\n\n"
+        "_Tip: You can use the buttons above for quick actions without typing!_"
+    )
+    await update.callback_query.message.reply_text(msg, parse_mode="Markdown")
 
 # ─────────────────────────────────────────────────────────────────────────────
 
