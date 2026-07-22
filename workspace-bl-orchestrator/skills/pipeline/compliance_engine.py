@@ -18,10 +18,15 @@ def check_compliance(lead: dict) -> tuple[bool, str]:
     obl = int(raw_dict.get("outbound_link_count", 0))
     is_dofollow = raw_dict.get("is_dofollow", True)
     
-    # Extract calculated metrics from score_opportunities (if available)
-    breakdown = lead.get("score_breakdown", {})
-    relevance = breakdown.get("relevance", 0.0)
-    authority = breakdown.get("authority", 0.0)
+    # Extract calculated metrics from the lead (since score_breakdown is not saved in Postgres)
+    relevance = float(lead.get("relevance_score") or 0.0)
+    
+    da = lead.get("domain_authority")
+    if da is not None:
+        authority = (float(da) / 100.0) * 40
+    else:
+        platform_weight = float(lead.get("platform_weight") or 0.5)
+        authority = platform_weight * 40
     
     # RULE 1: Link Farm Detection
     # If OBL > 100 on a dofollow page, it's highly likely a link farm or spam board
