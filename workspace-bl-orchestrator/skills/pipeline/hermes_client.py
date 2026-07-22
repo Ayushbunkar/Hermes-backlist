@@ -77,9 +77,10 @@ def _call_bifrost_with_retry(prompt: str, model: str, timeout: int = 60, max_ret
                 return data["choices"][0]["message"]
                 
         except HTTPError as e:
-            logger.warning(f"Bifrost HTTP Error {e.code} on attempt {attempt+1}/{max_retries}")
+            error_body = e.read().decode("utf-8", errors="ignore")
+            logger.warning(f"Bifrost HTTP Error {e.code} on attempt {attempt+1}/{max_retries}. Body: {error_body[:500]}")
             if e.code not in [502, 503, 504, 429]:
-                raise HermesAPIError(f"Fatal HTTP Error {e.code}")
+                raise HermesAPIError(f"Fatal HTTP Error {e.code}: {error_body[:200]}")
         except (URLError, TimeoutError) as e:
             logger.warning(f"Bifrost Network/Timeout Error on attempt {attempt+1}/{max_retries}: {e}")
         
