@@ -266,6 +266,14 @@ async def add_command(update, context):
     
     try:
         wdb.init_whitelist_db(config.BL_DB_PATH)
+        
+        # Pause all existing projects so we only focus on the new one
+        conn = config.get_db_connection()
+        c = conn.cursor()
+        c.execute("UPDATE projects SET status='paused' WHERE project_url != %s", (project,))
+        conn.commit()
+        conn.close()
+        
         name = project.split("://")[-1] if "://" in project else project
         pid = wdb.upsert_project(project, niche=niche, name=name)
         
@@ -273,7 +281,7 @@ async def add_command(update, context):
         for site in default_sites:
             wdb.upsert_whitelist_site(pid, site, added_by="seed", db_path=config.BL_DB_PATH)
             
-        await update.effective_message.reply_text(f"✅ Project {project} added successfully! Niche set to: {niche}. Tracking started.")
+        await update.effective_message.reply_text(f"✅ Project {project} added successfully!\n⏸️ All other projects have been paused.\nNiche set to: {niche}. Tracking started.")
     except Exception as e:
         await update.effective_message.reply_text(f"❌ Error adding project: {e}")
 
