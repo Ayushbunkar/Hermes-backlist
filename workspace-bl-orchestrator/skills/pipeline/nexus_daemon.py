@@ -551,10 +551,8 @@ def phase_draft() -> None:
 
 
 def phase_resurface() -> None:
-    """Re-send stale pending cards to Telegram (unacted editorial)."""
-    stale = bdb.get_stale_pending_opportunities(RESURFACE_HOURS, db_path=DB_PATH)
-    if not stale:
-        return
+    """Disabled: Prevent re-sending duplicate pending cards to Telegram."""
+    return
     resent = 0
     for opp in stale:
         try:
