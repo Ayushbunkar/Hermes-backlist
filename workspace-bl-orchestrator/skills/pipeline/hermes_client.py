@@ -11,7 +11,7 @@ from urllib.error import URLError, HTTPError
 import config
 
 BIFROST_URL = config.BIFROST_BASE_URL
-DEFAULT_MODEL = config.DEFAULT_MODEL
+DEFAULT_MODEL = "vertex/gemini-2.5-flash"
 DB_PATH = config.BL_DB_PATH
 
 logger = logging.getLogger("hermes_client")
