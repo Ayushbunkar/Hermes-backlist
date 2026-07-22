@@ -81,7 +81,7 @@ def parse_sitemap(sitemap_url: str) -> list[str]:
         return []
 
 def scan_project_sitemap(project_id: int, project_url: str):
-    """Scan the project's sitemap and save pages to the DB."""
+    """Scan the project's sitemap and save pages to the DB. Fallback to homepage crawling if sitemap is missing."""
     parsed = urlparse(project_url)
     base_url = f"{parsed.scheme}://{parsed.netloc}"
     sitemap_url = urljoin(base_url, "/sitemap.xml")
@@ -90,7 +90,29 @@ def scan_project_sitemap(project_id: int, project_url: str):
     urls = parse_sitemap(sitemap_url)
     
     if not urls:
-        logger.warning(f"No URLs found in sitemap for {project_url}. It might not exist or be at a different path.")
+        alt_sitemap = urljoin(base_url, "/sitemap_index.xml")
+        logger.info(f"Trying alternative sitemap: {alt_sitemap}")
+        urls = parse_sitemap(alt_sitemap)
+        
+    if not urls:
+        logger.warning(f"No sitemaps found. Falling back to scraping the homepage: {base_url}")
+        try:
+            resp = requests.get(base_url, headers=HEADERS, timeout=10)
+            if resp.status_code < 400:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                for a_tag in soup.find_all('a', href=True):
+                    href = a_tag['href']
+                    full_link = urljoin(base_url, href)
+                    if full_link.startswith(base_url):
+                        # Remove fragments and queries
+                        clean_link = full_link.split('#')[0].split('?')[0]
+                        if clean_link not in urls and clean_link != base_url:
+                            urls.append(clean_link)
+        except Exception as e:
+            logger.error(f"Failed to scrape homepage: {e}")
+            
+    if not urls:
+        logger.warning(f"No URLs found at all for {project_url}.")
         return
         
     logger.info(f"Found {len(urls)} URLs in sitemap. Processing...")
