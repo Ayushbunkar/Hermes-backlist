@@ -34,9 +34,10 @@ def check_compliance(lead: dict) -> tuple[bool, str]:
         return False, f"compliance_failure: excessive_obl ({obl} links)"
         
     # RULE 2: Relevance Threshold
-    # If the score_opportunities engine gave it < 10 points out of 30 for semantic relevance, it's off-topic
-    if relevance < 10.0:
-        return False, f"compliance_failure: off_topic (relevance {relevance}/30)"
+    # The database stores relevance_score on a 0-10 scale.
+    # We want at least 3.33/10 (equivalent to the old 10/30 threshold)
+    if relevance < 3.33:
+        return False, f"compliance_failure: off_topic (relevance {relevance}/10.0)"
         
     # RULE 3: Authority Floor
     # If the domain authority/weight is < 5 out of 40, it's not worth placing
