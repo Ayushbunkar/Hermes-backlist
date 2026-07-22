@@ -12,6 +12,9 @@ sleep 5
 echo "-> Verifying Python dependencies..."
 pip install -r requirements.txt > /dev/null 2>&1
 
+# Run database foreign key constraints fix
+echo "-> Applying Database Foreign Key fixes..."
+python apply_db_fixes.py
 
 # Force-clear Telegram's polling session (avoids 409 Conflict)
 echo "-> Clearing Telegram webhook/polling session..."
