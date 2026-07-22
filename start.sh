@@ -9,6 +9,10 @@ pkill -9 python 2>/dev/null || true
 pkill -9 node 2>/dev/null || true
 sleep 5
 
+echo "-> Verifying Python dependencies..."
+pip install -r requirements.txt > /dev/null 2>&1
+
+
 # Force-clear Telegram's polling session (avoids 409 Conflict)
 echo "-> Clearing Telegram webhook/polling session..."
 BOT_TOKEN=$(python3 -c "import os,sys; sys.path.insert(0,'workspace-bl-orchestrator/skills/pipeline'); import config; print(config.TELEGRAM_BOT_TOKEN)" 2>/dev/null)
