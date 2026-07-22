@@ -220,11 +220,14 @@ def invoke_ink(project: dict, run_dir: str, manifest_path: str, *, log_fn: Calla
     import hermes_client
     plog_verbose("draft", "ink_invoke", run_dir=run_dir, manifest=manifest_path)
     try:
-        hermes_client.run_worker(
+        res = hermes_client.run_worker(
             worker_id="bl-content",
             task_payload={"task": task, "run_dir": run_dir, "manifest": manifest_path},
             timeout_seconds=INK_TIMEOUT
         )
+        if res and res.get("status") == "failed":
+            log(f"draft: Hermes worker returned error: {res.get('error')}")
+            return False
     except Exception as e:
         log(f"draft: ERROR Hermes worker failed: {e}")
         return False
