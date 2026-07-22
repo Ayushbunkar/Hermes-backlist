@@ -20,7 +20,7 @@ if _SEARCH_DIR not in sys.path:
 from discover import clean_terms  # noqa: E402
 
 DEFAULT_BASE_URL = os.environ.get("BIFROST_BASE_URL", "https://placing-reliability-container-oecd.trycloudflare.com/v1")
-DEFAULT_MODEL = os.environ.get("BL_HUNTER_MODEL", os.environ.get("BL_GATE_MODEL", "ollama/qwen3-coder-next:latest"))
+DEFAULT_MODEL = os.environ.get("BL_HUNTER_MODEL", os.environ.get("BL_GATE_MODEL", "vertex/gemini-2.5-flash"))
 DEFAULT_TIMEOUT = int(os.environ.get("BL_HUNTER_TIMEOUT", "45"))
 CACHE_DIR = os.path.expanduser("~/.openclaw-backlink/data/hunter_cache")
 CACHE_TTL_HOURS = float(os.environ.get("BL_HUNTER_CACHE_HOURS", "24"))

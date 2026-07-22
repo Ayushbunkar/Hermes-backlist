@@ -99,7 +99,7 @@ def seed_pdf_vocab_with_ai(project_id: int, pdf_text: str, db_path: str = None) 
     
     db_path = db_path or wdb.DEFAULT_DB_PATH
     base_url = os.environ.get("BIFROST_BASE_URL", "https://placing-reliability-container-oecd.trycloudflare.com/v1")
-    model = os.environ.get("DEFAULT_MODEL", "ollama/qwen3-coder-next:latest")
+    model = os.environ.get("DEFAULT_MODEL", "vertex/gemini-2.5-flash")
     
     # Take first 4000 characters to prevent huge payloads
     text_sample = pdf_text[:4000]

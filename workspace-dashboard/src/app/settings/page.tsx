@@ -105,7 +105,7 @@ export default function SettingsPage() {
                 onChange={e => setSettings({...settings, ai_model: e.target.value})}
                 className="w-full bg-gray-950 border border-gray-700 text-white px-4 py-2 rounded-lg"
               >
-                <option value="ollama/qwen3-coder-next:latest">Qwen 3 Coder (Local)</option>
+                <option value="vertex/gemini-2.5-flash">Qwen 3 Coder (Local)</option>
                 <option value="vertex/gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
                 <option value="vertex/gemini-3.1-pro">Gemini 3.1 Pro</option>
                 <option value="openai/gpt-4o">GPT-4o</option>
