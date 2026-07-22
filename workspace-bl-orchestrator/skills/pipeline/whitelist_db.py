@@ -692,6 +692,35 @@ def delete_project(project_url: str, db_path: str = DEFAULT_DB_PATH) -> None:
         pid = row["id"]
         conn.execute("DELETE FROM harvest_leads WHERE project_id=%s", (pid,))
         conn.execute("DELETE FROM seen_opportunities WHERE project_id=%s", (pid,))
+        
+        # New additions for PostgreSQL dependencies
+        conn.execute("DELETE FROM project_sitemaps WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM project_competitors WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM project_vocab WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM domain_scores WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM leads WHERE project_id=%s", (pid,))
+        conn.execute("DELETE FROM pipeline_runs WHERE project_id=%s", (pid,))
+        
+        # Foreign keys cascading through whitelist_sites
+        conn.execute(
+            "DELETE FROM harvest_cursors WHERE whitelist_site_id IN "
+            "(SELECT id FROM whitelist_sites WHERE project_id=%s)",
+            (pid,),
+        )
+        conn.execute(
+            "DELETE FROM harvest_leads WHERE whitelist_site_id IN "
+            "(SELECT id FROM whitelist_sites WHERE project_id=%s)",
+            (pid,),
+        )
+        
+        # Foreign keys cascading through opportunities
+        conn.execute(
+            "DELETE FROM feedback_events WHERE opportunity_id IN "
+            "(SELECT id FROM opportunities WHERE project_id=%s OR project_url=%s)",
+            (pid, project_url),
+        )
+        conn.execute("DELETE FROM opportunities WHERE project_id=%s OR project_url=%s", (pid, project_url))
+        
         conn.execute(
             "DELETE FROM site_score_history WHERE whitelist_site_id IN "
             "(SELECT id FROM whitelist_sites WHERE project_id=%s)",

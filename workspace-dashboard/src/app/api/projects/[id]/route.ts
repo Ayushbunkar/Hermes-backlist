@@ -51,8 +51,19 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await client.query('DELETE FROM query_stats WHERE project_id = $1', [id]);
     await client.query('DELETE FROM seen_opportunities WHERE project_id = $1', [id]);
     await client.query('DELETE FROM vocab_terms WHERE project_id = $1', [id]);
+    
+    // Extra Postgres tables
+    await client.query('DELETE FROM project_sitemaps WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM project_competitors WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM project_vocab WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM domain_scores WHERE project_id = $1', [id]);
+    await client.query('DELETE FROM leads WHERE project_id = $1', [id]);
 
-    // 4. Opportunities (no FK, uses project_url string)
+    // 4. Opportunities and feedback events
+    await client.query('DELETE FROM feedback_events WHERE opportunity_id IN (SELECT id FROM opportunities WHERE project_id = $1)', [id]);
+    await client.query('DELETE FROM opportunities WHERE project_id = $1', [id]);
+    
+    await client.query('DELETE FROM feedback_events WHERE opportunity_id IN (SELECT id FROM opportunities WHERE project_url = $1)', [projectUrl]);
     await client.query('DELETE FROM opportunities WHERE project_url = $1', [projectUrl]);
 
     // 5. Finally delete the project itself
