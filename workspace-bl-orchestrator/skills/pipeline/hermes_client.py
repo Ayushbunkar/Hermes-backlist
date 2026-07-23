@@ -58,7 +58,7 @@ def _call_bifrost_with_retry(prompt: str, model: str, timeout: int = 60, max_ret
         data=data_encoded,
         headers={
             "Content-Type": "application/json", 
-            "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY')}",
+            "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY')}", "x-bf-vk": str(os.environ.get('HERMES_API_KEY')),
             "x-bf-vk": str(os.environ.get('HERMES_API_KEY'))
         },
         method="POST",
