@@ -11,7 +11,7 @@ from urllib.error import URLError, HTTPError
 import config
 
 BIFROST_URL = config.BIFROST_BASE_URL
-DEFAULT_MODEL = "vertex/gemini-2.5-flash"
+DEFAULT_MODEL = "vertex/gemini-2.5-flash-lite"
 DB_PATH = config.BL_DB_PATH
 
 logger = logging.getLogger("hermes_client")
@@ -56,7 +56,11 @@ def _call_bifrost_with_retry(prompt: str, model: str, timeout: int = 60, max_ret
     req = urllib.request.Request(
         url,
         data=data_encoded,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY')}"},
+        headers={
+            "Content-Type": "application/json", 
+            "Authorization": f"Bearer {os.environ.get('HERMES_API_KEY')}",
+            "x-bf-vk": str(os.environ.get('HERMES_API_KEY'))
+        },
         method="POST",
     )
     
